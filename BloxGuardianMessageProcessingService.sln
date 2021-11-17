@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BloxGuardianMessageProcessingService", "BloxGuardianMessageProcessingService.csproj", "{47028788-E488-4CA2-89BD-CF9C1911F761}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BloxChannelDataModelLibrary", "..\BloxChannelDataModelLibrary\BloxChannelDataModelLibrary.csproj", "{B0DE09C5-0D6F-4E6F-B07D-21BB4FA42B70}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{47028788-E488-4CA2-89BD-CF9C1911F761}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47028788-E488-4CA2-89BD-CF9C1911F761}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47028788-E488-4CA2-89BD-CF9C1911F761}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47028788-E488-4CA2-89BD-CF9C1911F761}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0DE09C5-0D6F-4E6F-B07D-21BB4FA42B70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0DE09C5-0D6F-4E6F-B07D-21BB4FA42B70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0DE09C5-0D6F-4E6F-B07D-21BB4FA42B70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0DE09C5-0D6F-4E6F-B07D-21BB4FA42B70}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {483CD48B-89D8-4760-8B61-2440DDAEAFBF}
+	EndGlobalSection
+EndGlobal
