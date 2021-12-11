@@ -16,6 +16,10 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Net;
 using System.Text;
+using SendGrid;
+using SendGrid.Helpers.Mail;
+using SendGrid.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace TequaCreek.BloxGuardianMessageProcessingService
 {
@@ -23,6 +27,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
     {
         private readonly ILogger<Worker> logger;
         private IConfiguration configuration;
+        private IServiceCollection services;
 
         private Timer timer = null!;
 
@@ -36,10 +41,11 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
         private RabbitMQ.Client.Events.AsyncEventingBasicConsumer rmqFromBloxChannelConsumer;
 
         public string processingServerId { get; set; }
-        public Worker(IConfiguration configuration, ILogger<Worker> logger)
+        public Worker(IConfiguration configuration, ILogger<Worker> logger, IServiceCollection services)
         {
             this.logger = logger;
             this.configuration = configuration;
+            this.services = services;
 
             this.processingServerId = configuration["AppSettings:ProcessingServerId"];
 
@@ -1164,6 +1170,34 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
 
                             case TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.MESSAGE_TYPE_ID_BG_WEB_SERVICE_TO_BLOXGUARDIAN:
 
+                                var serviceProvider = services.BuildServiceProvider();
+                                var client = serviceProvider.GetRequiredService<ISendGridClient>();
+
+
+                                /*
+                                dynamicTemplateData.header = configuration["AppSettings:InitialValidateEMailHeader"];
+                                dynamicTemplateData.text = configuration["AppSettings:InitialValidateEMailText"];
+                                dynamicTemplateData.clickbackLink = configuration["AppSettings:InitialValidateClickbackLink"]
+                                                                       .Replace(TequaCreek.BloxGuardianDataModelLibrary
+                                                                                          .SharedConstantValues
+                                                                                          .REPLACE_TOKEN_BLOXGUARDIAN_ACCOUNT_ID, bloxGuardianAccountId);
+                                dynamicTemplateData.buttonText = configuration["AppSettings:InitialValidateButtonText"];
+
+                                SendGridMessage sendGridMessage = new SendGridMessage();
+
+                                sendGridMessage.SetSubject(configuration["AppSettings:InitialValidateEMailSubject"]);
+                                sendGridMessage.SetFrom(new EmailAddress(configuration["AppSettings:EMailVerifySenderAddress"], 
+                                                             configuration["AppSettings:EMailVerifySenderName"]));
+                                sendGridMessage.AddTo(new EmailAddress(messageReceipentAddress, messageReceipentName));
+                                sendGridMessage.SetTemplateId(configuration["AppSettings:SendGridEMailVerifyTemplateID"]);
+                                sendGridMessage.SetTemplateData(dynamicTemplateData);
+
+                                var response = await client.SendEmailAsync(msg).ConfigureAwait(false);
+
+                                Console.WriteLine($"Response: {response.StatusCode}");
+                                Console.WriteLine(response.Headers);
+
+                                 * */
 
 
 

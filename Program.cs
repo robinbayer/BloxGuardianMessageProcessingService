@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using NLog.Web;
 using System.Runtime.InteropServices;
+using SendGrid.Extensions.DependencyInjection;
 
 namespace TequaCreek.BloxGuardianMessageProcessingService
 {
@@ -46,6 +47,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                     .ConfigureServices((hostContext, services) =>
                     {
                         services.AddHostedService<Worker>();
+                        services.AddSendGrid(options => { options.ApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY"); });
                     })
                     .UseNLog();
             }
@@ -56,6 +58,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                     .ConfigureServices((hostContext, services) =>
                     {
                         services.AddHostedService<Worker>();
+                        services.AddSendGrid(options => { options.ApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY"); });
                     })
                     .UseNLog();
 
@@ -65,6 +68,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
             }
 
         }       // CreateHostBuilder()
+
 
     }
 }
