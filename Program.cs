@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using NLog.Web;
 using System.Runtime.InteropServices;
 using SendGrid.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace TequaCreek.BloxGuardianMessageProcessingService
 {
@@ -22,6 +23,12 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
 
             try
             {
+
+                logger.Info("Starting BloxGuardian Message Processing Service");
+                logger.Info("Assembly version {0}", Assembly.GetEntryAssembly().GetName().Version);
+                logger.Info("File version {0}", Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>().Version);
+                logger.Info("Product version {0}", Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion);
+
                 CreateHostBuilder(args).Build().Run();
             }
             catch (Exception ex)
