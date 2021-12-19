@@ -676,30 +676,30 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                             sqlStatement.Append("UPDATE message_to_mobile_device ");
                                             sqlStatement.Append("  SET processing_status = @UpdateToProcessingStatus ");
                                             sqlStatement.Append("  WHERE message_to_mobile_device_internal_id IN ");
-                                            sqlStatement.Append("(SELECT MTG.message_to_mobile_device_internal_id ");
-                                            sqlStatement.Append("   FROM message_to_mobile_device MTD INNER JOIN message_to_bloxguardian MTBG ON  ");
-                                            sqlStatement.Append("        MTD.message_to_bloxguardian_internal_id = MTBG.message_to_bloxguardian_internal_id ");
+                                            sqlStatement.Append("(SELECT MTMD.message_to_mobile_device_internal_id ");
+                                            sqlStatement.Append("   FROM message_to_mobile_device MTMD INNER JOIN message_to_bloxguardian MTBG ON  ");
+                                            sqlStatement.Append("        MTMD.message_to_bloxguardian_internal_id = MTBG.message_to_bloxguardian_internal_id ");
                                             sqlStatement.Append("   WHERE MTBG.allowed_communication_path_internal_id = @AllowedCommunicationPathInternalID AND ");
-                                            sqlStatement.Append("         MTBG.ingame_user_id = @InGameUserId AND MTD.processing_status = @ProcessingStatus AND ");
+                                            sqlStatement.Append("         MTBG.ingame_user_id = @InGameUserId AND MTMD.processing_status = @ProcessingStatus AND ");
                                             sqlStatement.Append("         MTBG.message_source = @MessageSource) ");
 
                                             sqlCommandRemovePendingMessagesForPairedAccount = sqlConnection2.CreateCommand();
                                             sqlCommandRemovePendingMessagesForPairedAccount.CommandText = sqlStatement.ToString();
                                             sqlCommandRemovePendingMessagesForPairedAccount.CommandTimeout = 600;
-                                            sqlCommandRemovePendingMessagesForPairedAccount.Parameters.Add(new NpgsqlParameter("@UpdateProcessingStatus", NpgsqlTypes.NpgsqlDbType.Integer));
+                                            sqlCommandRemovePendingMessagesForPairedAccount.Parameters.Add(new NpgsqlParameter("@UpdateToProcessingStatus", NpgsqlTypes.NpgsqlDbType.Integer));
                                             sqlCommandRemovePendingMessagesForPairedAccount.Parameters.Add(new NpgsqlParameter("@AllowedCommunicationPathInternalID", NpgsqlTypes.NpgsqlDbType.Integer));
                                             sqlCommandRemovePendingMessagesForPairedAccount.Parameters.Add(new NpgsqlParameter("@InGameUserId", NpgsqlTypes.NpgsqlDbType.Varchar, 20));
                                             sqlCommandRemovePendingMessagesForPairedAccount.Parameters.Add(new NpgsqlParameter("@ProcessingStatus", NpgsqlTypes.NpgsqlDbType.Integer));
                                             sqlCommandRemovePendingMessagesForPairedAccount.Parameters.Add(new NpgsqlParameter("@MessageSource", NpgsqlTypes.NpgsqlDbType.Integer));
 
-                                            sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@UpdateProcessingStatus"].Value = 0;
+                                            sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@UpdateToProcessingStatus"].Value = 0;
                                             sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@AllowedCommunicationPathInternalID"].Value = "";
                                             sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@InGameUserId"].Value = "";
                                             sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@ProcessingStatus"].Value = 0;
                                             sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@MessageSource"].Value = 0;
                                             await sqlCommandRemovePendingMessagesForPairedAccount.PrepareAsync();
 
-                                            sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@UpdateProcessingStatus"].Value =
+                                            sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@UpdateToProcessingStatus"].Value =
                                                 (int)TequaCreek.BloxGuardianDataModelLibrary.MessageToDeviceProcessingStatus.Removed;
                                             sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@AllowedCommunicationPathInternalID"].Value = allowedCommunicationPathInternalId;
                                             sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@InGameUserId"].Value = inGameUserId;
@@ -754,13 +754,13 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         //////////////////////////////////////////////////////////////
 
                                         sqlStatement = new System.Text.StringBuilder();
-                                        sqlStatement.Append("SELECT MTBG.message_to_bloxguardian_external_id, MTD.message_pushed_date_time, MTBG.payload ");
-                                        sqlStatement.Append("  FROM message_to_mobile_device MTD INNER JOIN message_to_bloxguardian MTBG ON  ");
-                                        sqlStatement.Append("       MTD.message_to_bloxguardian_internal_id = MTBG.message_to_bloxguardian_internal_id ");
+                                        sqlStatement.Append("SELECT MTBG.message_to_bloxguardian_external_id, MTMD.message_pushed_date_time, MTBG.payload ");
+                                        sqlStatement.Append("  FROM message_to_mobile_device MTMD INNER JOIN message_to_bloxguardian MTBG ON  ");
+                                        sqlStatement.Append("       MTMD.message_to_bloxguardian_internal_id = MTBG.message_to_bloxguardian_internal_id ");
                                         sqlStatement.Append("  WHERE MTBG.allowed_communication_path_internal_id = @AllowedCommunicationPathInternalID AND ");
-                                        sqlStatement.Append("        MTBG.ingame_user_id = @InGameUserId AND MTD.processing_status = @ProcessingStatus AND ");
+                                        sqlStatement.Append("        MTBG.ingame_user_id = @InGameUserId AND MTMD.processing_status = @ProcessingStatus AND ");
                                         sqlStatement.Append("        MTBG.message_source = @MessageSource ");
-                                        sqlStatement.Append("  ORDER BY MTD.message_pushed_date_time ");
+                                        sqlStatement.Append("  ORDER BY MTMD.message_pushed_date_time ");
 
                                         sqlCommandGetPendingMessagesForPairedAccount = sqlConnection1.CreateCommand();
                                         sqlCommandGetPendingMessagesForPairedAccount.CommandText = sqlStatement.ToString();
@@ -844,11 +844,11 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         sqlStatement.Append("UPDATE message_to_mobile_device ");
                                         sqlStatement.Append("  SET processing_status = @UpdateToProcessingStatus ");
                                         sqlStatement.Append("  WHERE message_to_mobile_device_internal_id IN ");
-                                        sqlStatement.Append("(SELECT MTG.message_to_mobile_device_internal_id ");
-                                        sqlStatement.Append("   FROM message_to_mobile_device MTD INNER JOIN message_to_bloxguardian MTBG ON  ");
-                                        sqlStatement.Append("        MTD.message_to_bloxguardian_internal_id = MTBG.message_to_bloxguardian_internal_id ");
+                                        sqlStatement.Append("(SELECT MTMD.message_to_mobile_device_internal_id ");
+                                        sqlStatement.Append("   FROM message_to_mobile_device MTMD INNER JOIN message_to_bloxguardian MTBG ON  ");
+                                        sqlStatement.Append("        MTMD.message_to_bloxguardian_internal_id = MTBG.message_to_bloxguardian_internal_id ");
                                         sqlStatement.Append("   WHERE MTBG.allowed_communication_path_internal_id = @AllowedCommunicationPathInternalID AND ");
-                                        sqlStatement.Append("         MTBG.ingame_user_id = @InGameUserId AND MTD.processing_status = @ProcessingStatus AND ");
+                                        sqlStatement.Append("         MTBG.ingame_user_id = @InGameUserId AND MTMD.processing_status = @ProcessingStatus AND ");
                                         sqlStatement.Append("         MTBG.message_source = @MessageSource) ");
 
                                         sqlCommandRemovePendingMessagesForPairedAccount = sqlConnection1.CreateCommand();
@@ -1171,30 +1171,30 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         sqlStatement.Append("UPDATE message_to_mobile_device ");
                                         sqlStatement.Append("  SET processing_status = @UpdateToProcessingStatus ");
                                         sqlStatement.Append("  WHERE message_to_mobile_device_internal_id IN ");
-                                        sqlStatement.Append("(SELECT MTG.message_to_mobile_device_internal_id ");
-                                        sqlStatement.Append("   FROM message_to_mobile_device MTD INNER JOIN message_to_bloxguardian MTBG ON  ");
-                                        sqlStatement.Append("        MTD.message_to_bloxguardian_internal_id = MTBG.message_to_bloxguardian_internal_id ");
+                                        sqlStatement.Append("(SELECT MTMD.message_to_mobile_device_internal_id ");
+                                        sqlStatement.Append("   FROM message_to_mobile_device MTMD INNER JOIN message_to_bloxguardian MTBG ON  ");
+                                        sqlStatement.Append("        MTMD.message_to_bloxguardian_internal_id = MTBG.message_to_bloxguardian_internal_id ");
                                         sqlStatement.Append("   WHERE MTBG.allowed_communication_path_internal_id = @AllowedCommunicationPathInternalID AND ");
-                                        sqlStatement.Append("         MTBG.ingame_user_id = @InGameUserId AND MTD.processing_status = @ProcessingStatus AND ");
+                                        sqlStatement.Append("         MTBG.ingame_user_id = @InGameUserId AND MTMD.processing_status = @ProcessingStatus AND ");
                                         sqlStatement.Append("         MTBG.message_source = @MessageSource) ");
 
                                         sqlCommandRemovePendingMessagesForPairedAccount = sqlConnection1.CreateCommand();
                                         sqlCommandRemovePendingMessagesForPairedAccount.CommandText = sqlStatement.ToString();
                                         sqlCommandRemovePendingMessagesForPairedAccount.CommandTimeout = 600;
-                                        sqlCommandRemovePendingMessagesForPairedAccount.Parameters.Add(new NpgsqlParameter("@UpdateProcessingStatus", NpgsqlTypes.NpgsqlDbType.Integer));
+                                        sqlCommandRemovePendingMessagesForPairedAccount.Parameters.Add(new NpgsqlParameter("@UpdateToProcessingStatus", NpgsqlTypes.NpgsqlDbType.Integer));
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters.Add(new NpgsqlParameter("@AllowedCommunicationPathInternalID", NpgsqlTypes.NpgsqlDbType.Integer));
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters.Add(new NpgsqlParameter("@InGameUserId", NpgsqlTypes.NpgsqlDbType.Varchar, 20));
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters.Add(new NpgsqlParameter("@ProcessingStatus", NpgsqlTypes.NpgsqlDbType.Integer));
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters.Add(new NpgsqlParameter("@MessageSource", NpgsqlTypes.NpgsqlDbType.Integer));
 
-                                        sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@UpdateProcessingStatus"].Value = 0;
+                                        sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@UpdateToProcessingStatus"].Value = 0;
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@AllowedCommunicationPathInternalID"].Value = "";
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@InGameUserId"].Value = "";
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@ProcessingStatus"].Value = 0;
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@MessageSource"].Value = 0;
                                         await sqlCommandRemovePendingMessagesForPairedAccount.PrepareAsync();
 
-                                        sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@UpdateProcessingStatus"].Value =
+                                        sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@UpdateToProcessingStatus"].Value =
                                             (int)TequaCreek.BloxGuardianDataModelLibrary.MessageToDeviceProcessingStatus.Removed;
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@AllowedCommunicationPathInternalID"].Value =
                                           allowedCommunicationPathInternalId;
@@ -1252,13 +1252,13 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         /////////////////////////////////////////////////////////
 
                                         sqlStatement = new System.Text.StringBuilder();
-                                        sqlStatement.Append("SELECT MTBG.message_to_bloxguardian_external_id, MTD.message_pushed_date_time, MTBG.payload ");
-                                        sqlStatement.Append("  FROM message_to_mobile_device MTD INNER JOIN message_to_bloxguardian MTBG ON  ");
-                                        sqlStatement.Append("       MTD.message_to_bloxguardian_internal_id = MTBG.message_to_bloxguardian_internal_id ");
+                                        sqlStatement.Append("SELECT MTBG.message_to_bloxguardian_external_id, MTMD.message_pushed_date_time, MTBG.payload ");
+                                        sqlStatement.Append("  FROM message_to_mobile_device MTMD INNER JOIN message_to_bloxguardian MTBG ON  ");
+                                        sqlStatement.Append("       MTMD.message_to_bloxguardian_internal_id = MTBG.message_to_bloxguardian_internal_id ");
                                         sqlStatement.Append("  WHERE MTBG.allowed_communication_path_internal_id = @AllowedCommunicationPathInternalID AND ");
-                                        sqlStatement.Append("        MTBG.ingame_user_id = @InGameUserId AND MTD.processing_status = @ProcessingStatus AND ");
+                                        sqlStatement.Append("        MTBG.ingame_user_id = @InGameUserId AND MTMD.processing_status = @ProcessingStatus AND ");
                                         sqlStatement.Append("        MTBG.message_source = @MessageSource ");
-                                        sqlStatement.Append("  ORDER BY MTD.message_pushed_date_time ");
+                                        sqlStatement.Append("  ORDER BY MTMD.message_pushed_date_time ");
 
                                         sqlCommandGetPendingMessagesForPairedAccount = sqlConnection1.CreateCommand();
                                         sqlCommandGetPendingMessagesForPairedAccount.CommandText = sqlStatement.ToString();
@@ -1346,11 +1346,11 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         sqlStatement.Append("UPDATE message_to_mobile_device ");
                                         sqlStatement.Append("  SET processing_status = @UpdateToProcessingStatus ");
                                         sqlStatement.Append("  WHERE message_to_mobile_device_internal_id IN ");
-                                        sqlStatement.Append("(SELECT MTG.message_to_mobile_device_internal_id ");
-                                        sqlStatement.Append("   FROM message_to_mobile_device MTD INNER JOIN message_to_bloxguardian MTBG ON  ");
-                                        sqlStatement.Append("        MTD.message_to_bloxguardian_internal_id = MTBG.message_to_bloxguardian_internal_id ");
+                                        sqlStatement.Append("(SELECT MTMD.message_to_mobile_device_internal_id ");
+                                        sqlStatement.Append("   FROM message_to_mobile_device MTMD INNER JOIN message_to_bloxguardian MTBG ON  ");
+                                        sqlStatement.Append("        MTMD.message_to_bloxguardian_internal_id = MTBG.message_to_bloxguardian_internal_id ");
                                         sqlStatement.Append("   WHERE MTBG.allowed_communication_path_internal_id = @AllowedCommunicationPathInternalID AND ");
-                                        sqlStatement.Append("         MTBG.ingame_user_id = @InGameUserId AND MTD.processing_status = @ProcessingStatus AND ");
+                                        sqlStatement.Append("         MTBG.ingame_user_id = @InGameUserId AND MTMD.processing_status = @ProcessingStatus AND ");
                                         sqlStatement.Append("         MTBG.message_source = @MessageSource) ");
 
                                         sqlCommandRemovePendingMessagesForPairedAccount = sqlConnection1.CreateCommand();
