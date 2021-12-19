@@ -20,6 +20,7 @@ using SendGrid;
 using SendGrid.Helpers.Mail;
 using SendGrid.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TequaCreek.BloxGuardianMessageProcessingService
 {
@@ -27,7 +28,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
     {
         private readonly ILogger<Worker> logger;
         private IConfiguration configuration;
-        private IServiceCollection services;
+        private ISendGridClient sendGridClient;
 
         private Timer timer = null!;
 
@@ -41,11 +42,11 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
         private RabbitMQ.Client.Events.AsyncEventingBasicConsumer rmqFromBloxChannelConsumer;
 
         public string processingServerId { get; set; }
-        public Worker(IConfiguration configuration, ILogger<Worker> logger, IServiceCollection services)
+        public Worker(IConfiguration configuration, ILogger<Worker> logger, [FromServices] ISendGridClient sendGridClient)
         {
             this.logger = logger;
             this.configuration = configuration;
-            this.services = services;
+            this.sendGridClient = sendGridClient;
 
             this.processingServerId = configuration["AppSettings:ProcessingServerId"];
 
@@ -1560,10 +1561,6 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                 // TEMP CODE
                                 logger.LogDebug("Message is Mobile to BloxGuardian");
                                 // END TEMP CODE
-
-                                var serviceProvider = services.BuildServiceProvider();
-                                var client = serviceProvider.GetRequiredService<ISendGridClient>();
-
 
 
                                 /////////////////////////////////////////////////////
