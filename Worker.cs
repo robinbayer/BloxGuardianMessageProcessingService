@@ -1116,6 +1116,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         {
                                             getPairingPayload.pairingStatus = (int)TequaCreek.BloxGuardianDataModelLibrary.PairingStatus.NoPairingExists;
                                         }
+                                        await sqlDataReaderGetInGameToAccountPairing.CloseAsync();
 
                                         // 2.)  Write return message to file on file system
                                         baseMessageFileName = PadZeroLeft(messageToBloxGuardianInternalId, 10);
@@ -1196,7 +1197,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters.Add(new NpgsqlParameter("@MessageSource", NpgsqlTypes.NpgsqlDbType.Integer));
 
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@UpdateToProcessingStatus"].Value = 0;
-                                        sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@AllowedCommunicationPathInternalID"].Value = "";
+                                        sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@AllowedCommunicationPathInternalID"].Value = 0;
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@InGameUserId"].Value = "";
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@ProcessingStatus"].Value = 0;
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@MessageSource"].Value = 0;
@@ -1209,7 +1210,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@InGameUserId"].Value =
                                           inGameUserId;
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@ProcessingStatus"].Value =
-                                            (int)TequaCreek.BloxGuardianDataModelLibrary.MessageToDeviceProcessingStatus.PushedToDevice;
+                                            (int)TequaCreek.BloxGuardianDataModelLibrary.MessageToDeviceProcessingStatus.Removed;
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@MessageSource"].Value =
                                             (int)TequaCreek.BloxGuardianDataModelLibrary.MessageSource.FromExternal;
                                         await sqlCommandRemovePendingMessagesForPairedAccount.ExecuteNonQueryAsync();
@@ -1276,7 +1277,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         sqlCommandGetPendingMessagesForPairedAccount.Parameters.Add(new NpgsqlParameter("@ProcessingStatus", NpgsqlTypes.NpgsqlDbType.Integer));
                                         sqlCommandGetPendingMessagesForPairedAccount.Parameters.Add(new NpgsqlParameter("@MessageSource", NpgsqlTypes.NpgsqlDbType.Integer));
 
-                                        sqlCommandGetPendingMessagesForPairedAccount.Parameters["@AllowedCommunicationPathInternalID"].Value = "";
+                                        sqlCommandGetPendingMessagesForPairedAccount.Parameters["@AllowedCommunicationPathInternalID"].Value = 0;
                                         sqlCommandGetPendingMessagesForPairedAccount.Parameters["@InGameUserId"].Value = "";
                                         sqlCommandGetPendingMessagesForPairedAccount.Parameters["@ProcessingStatus"].Value = 0;
                                         sqlCommandGetPendingMessagesForPairedAccount.Parameters["@MessageSource"].Value = 0;
@@ -1379,15 +1380,15 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
 
                                         // 1.)  Set status for pending messages for Account to "removed"
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@UpdateToProcessingStatus"].Value =
-                                            TequaCreek.BloxGuardianDataModelLibrary.MessageToDeviceProcessingStatus.Removed;
+                                            (int)TequaCreek.BloxGuardianDataModelLibrary.MessageToDeviceProcessingStatus.Removed;
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@AllowedCommunicationPathInternalID"].Value =
                                           allowedCommunicationPathInternalId;
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@InGameUserId"].Value =
                                           inGameUserId;
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@ProcessingStatus"].Value =
-                                            TequaCreek.BloxGuardianDataModelLibrary.MessageToDeviceProcessingStatus.Removed;
+                                            (int)TequaCreek.BloxGuardianDataModelLibrary.MessageToDeviceProcessingStatus.Removed;
                                         sqlCommandRemovePendingMessagesForPairedAccount.Parameters["@MessageSource"].Value =
-                                            TequaCreek.BloxGuardianDataModelLibrary.MessageSource.FromExternal;
+                                            (int)TequaCreek.BloxGuardianDataModelLibrary.MessageSource.FromExternal;
                                         await sqlCommandRemovePendingMessagesForPairedAccount.ExecuteNonQueryAsync();
 
                                         // 2.)  Write return message to file on file system
@@ -1409,7 +1410,8 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                                   baseFileDirectory + Path.DirectorySeparatorChar + baseMessageFileName + "." + TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.BLOXGUARDIAN_MESSAGE_FILE_EXTENSION);
 
                                         // 3.)  Update status to show that file with message was written
-                                        sqlCommandUpdateMessageToBloxGuardian.Parameters["@ProcessingStatus"].Value = (int)TequaCreek.BloxGuardianDataModelLibrary.MessageProcessingStatus.QueuedForMessagingSubsystem;
+                                        sqlCommandUpdateMessageToBloxGuardian.Parameters["@ProcessingStatus"].Value = 
+                                            (int)TequaCreek.BloxGuardianDataModelLibrary.MessageProcessingStatus.QueuedForMessagingSubsystem;
                                         sqlCommandUpdateMessageToBloxGuardian.Parameters["@MessageToBloxGuardianInternalID"].Value =
                                             messageToBloxGuardianInternalId;
                                         await sqlCommandUpdateMessageToBloxGuardian.ExecuteNonQueryAsync();
@@ -1497,7 +1499,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                                 logger.LogWarning("Invalid account pairing condition to process message with ID = {0}", messageToBloxGuardianInternalId);
                                                 continueProcessing = false;
                                             }
-
+                                            await sqlDataReaderGetInGameToAccountPairing.CloseAsync();
 
                                             if (continueProcessing)
                                             {
