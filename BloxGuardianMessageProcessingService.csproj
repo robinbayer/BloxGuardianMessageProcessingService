@@ -32,6 +32,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BloxChannelDataModelLibrary\BloxChannelDataModelLibrary.csproj" />
     <ProjectReference Include="..\BloxChannelDotNetAPI\BloxChannelDotNetAPI.csproj" />
+    <ProjectReference Include="..\BloxChannelIGInternalAPI\BloxChannelIGInternalAPI.csproj" />
     <ProjectReference Include="..\BloxGuardianDataModelLibrary\BloxGuardianDataModelLibrary.csproj" />
   </ItemGroup>
 

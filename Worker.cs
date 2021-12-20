@@ -273,58 +273,61 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                     //
                     // {Message Source Constant} is one of the following values:  MESSAGE_TYPE_ID_INGAME_TO_BLOXGUARDIAN
                     //                                                            MESSAGE_TYPE_ID_EXTERNAL_TO_BLOXGUARDIAN
-                    //                                                            MESSAGE_TYPE_ID_BG_WEB_SERVICE_TO_BLOXGUARDIAN
+                    //                                                            MESSAGE_TYPE_ID_INTERSYSTEM_TO_BLOXGUARDIAN
                     //
                     // defined in TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues
 
                     string messageBody = System.Text.Encoding.UTF8.GetString(@event.Body.ToArray());
                     string messageType = messageBody.Substring(0, messageBody.IndexOf(","));
-                    messageToBloxGuardianInternalId = int.Parse(messageBody.Substring(messageBody.IndexOf(",") + 1));
 
-                    // Determine message origination source (i.e. function that called BloxGuardian API from In-Game endpoint)
-                    sqlCommandGetMessageToBloxGuardian.Parameters["@MessageToBloxGuardianInternalID"].Value = messageToBloxGuardianInternalId;
-                    sqlDataReaderGetMessageToBloxGuardian = await sqlCommandGetMessageToBloxGuardian.ExecuteReaderAsync();
-                    if (await sqlDataReaderGetMessageToBloxGuardian.ReadAsync())
+
+                    switch (messageType)
                     {
+                        case TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.MESSAGE_TYPE_ID_INGAME_TO_BLOXGUARDIAN:
 
-                        messageToBloxGuardianExternalId = sqlDataReaderGetMessageToBloxGuardian.GetString(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_EXTERNAL_ID);
-                        messageOriginationTypeCode = sqlDataReaderGetMessageToBloxGuardian.GetInt32(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_MESSAGE_ORIGINATION_TYPE_CODE);
+                            messageToBloxGuardianInternalId = int.Parse(messageBody.Substring(messageBody.IndexOf(",") + 1));
 
-                        if (!await sqlDataReaderGetMessageToBloxGuardian.IsDBNullAsync(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_PAYLOAD))
-                        {
-                            payload = sqlDataReaderGetMessageToBloxGuardian.GetString(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_PAYLOAD);
-                        }
+                            // TEMP CODE
+                            logger.LogDebug("Processing message with Internal ID = {0}", messageToBloxGuardianInternalId);
+                            // END TEMP CODE
 
-                        allowedCommunicationPathInternalId = sqlDataReaderGetMessageToBloxGuardian.GetInt32(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_ALLOWED_COMMUNICATION_PATH_INTERNAL_ID);
 
-                        if (!await sqlDataReaderGetMessageToBloxGuardian.IsDBNullAsync(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_INGAME_USER_ID))
-                        {
-                            inGameUserId = sqlDataReaderGetMessageToBloxGuardian.GetString(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_INGAME_USER_ID);
-                        }
+                            // Determine message origination source (i.e. function that called BloxGuardian API from In-Game endpoint)
+                            sqlCommandGetMessageToBloxGuardian.Parameters["@MessageToBloxGuardianInternalID"].Value = messageToBloxGuardianInternalId;
+                            sqlDataReaderGetMessageToBloxGuardian = await sqlCommandGetMessageToBloxGuardian.ExecuteReaderAsync();
+                            if (await sqlDataReaderGetMessageToBloxGuardian.ReadAsync())
+                            {
 
-                        inGameEndpointInternalId = sqlDataReaderGetMessageToBloxGuardian.GetInt32(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_INGAME_ENDPOINT_INTERNAL_ID);
-                        externalEndpointInternalId = sqlDataReaderGetMessageToBloxGuardian.GetInt32(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_EXTERNAL_ENDPOINT_INTERNAL_ID);
-                    }
-                    else
-                    {
+                                messageToBloxGuardianExternalId = sqlDataReaderGetMessageToBloxGuardian.GetString(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_EXTERNAL_ID);
+                                messageOriginationTypeCode = sqlDataReaderGetMessageToBloxGuardian.GetInt32(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_MESSAGE_ORIGINATION_TYPE_CODE);
 
-                        /// Database/System integrity issue
-                        logger.LogError("Unable to find record with Internal ID = {0} for Message to BloxGuardian", messageToBloxGuardianInternalId);
+                                if (!await sqlDataReaderGetMessageToBloxGuardian.IsDBNullAsync(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_PAYLOAD))
+                                {
+                                    payload = sqlDataReaderGetMessageToBloxGuardian.GetString(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_PAYLOAD);
+                                }
 
-                        continueProcessing = false;
-                    }
-                    await sqlDataReaderGetMessageToBloxGuardian.CloseAsync();
+                                allowedCommunicationPathInternalId = sqlDataReaderGetMessageToBloxGuardian.GetInt32(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_ALLOWED_COMMUNICATION_PATH_INTERNAL_ID);
 
-                    if (continueProcessing)
-                    {
+                                if (!await sqlDataReaderGetMessageToBloxGuardian.IsDBNullAsync(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_INGAME_USER_ID))
+                                {
+                                    inGameUserId = sqlDataReaderGetMessageToBloxGuardian.GetString(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_INGAME_USER_ID);
+                                }
 
-                        // TEMP CODE
-                        logger.LogDebug("Processing message with Internal ID = {0}", messageToBloxGuardianInternalId);
-                        // END TEMP CODE
+                                inGameEndpointInternalId = sqlDataReaderGetMessageToBloxGuardian.GetInt32(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_INGAME_ENDPOINT_INTERNAL_ID);
+                                externalEndpointInternalId = sqlDataReaderGetMessageToBloxGuardian.GetInt32(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_EXTERNAL_ENDPOINT_INTERNAL_ID);
+                            }
+                            else
+                            {
 
-                        switch (messageType)
-                        {
-                            case TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.MESSAGE_TYPE_ID_INGAME_TO_BLOXGUARDIAN:
+                                /// Database/System integrity issue
+                                logger.LogError("Unable to find record with Internal ID = {0} for Message to BloxGuardian", messageToBloxGuardianInternalId);
+
+                                continueProcessing = false;
+                            }
+                            await sqlDataReaderGetMessageToBloxGuardian.CloseAsync();
+
+                            if (continueProcessing)
+                            {
 
                                 // TEMP CODE
                                 logger.LogDebug("Message is In-Game to BloxGuardian");
@@ -459,7 +462,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
 
                                                         // Add new half-open pairing
                                                         sqlCommandInsertInGameToAccountPairing.Parameters["@AllowedCommunicationPathInternalID"].Value = allowedCommunicationPathInternalId;
-                                                        sqlCommandInsertInGameToAccountPairing.Parameters["@InGameUserId"].Value =                                                          inGameUserId;
+                                                        sqlCommandInsertInGameToAccountPairing.Parameters["@InGameUserId"].Value = inGameUserId;
                                                         sqlCommandInsertInGameToAccountPairing.Parameters["@BloxGuardianAccountInternalID"].Value = System.DBNull.Value;
                                                         sqlCommandInsertInGameToAccountPairing.Parameters["@PairingStatus"].Value = (int)TequaCreek.BloxGuardianDataModelLibrary.PairingStatus.HalfOpenFromInGame;
                                                         sqlCommandInsertInGameToAccountPairing.Parameters["@RecordAddedDateTime"].Value = processingRunDateTime;
@@ -492,8 +495,8 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
 
                                                         // PROGRAMMER'S NOTE:  Send message to endpoints of completed pairing
                                                         logger.LogDebug("Will send message to endpoints of completed pairing from code to be inserted here");
-                                                        
-                                                        
+
+
                                                         break;
 
                                                 }
@@ -972,7 +975,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                                 if (sqlDataReaderGetInGameToAccountPairing.GetInt32(ApplicationValues.INGAME_USER_ID_BG_ACCOUNT_PAIRING_QUERY_RESULT_COLUMN_OFFSET_PAIRING_STATUS) ==
                                                     (int)TequaCreek.BloxGuardianDataModelLibrary.PairingStatus.CompletedPairing)
                                                 {
-                                                    inGameUserBGAccountPairingInternalId = 
+                                                    inGameUserBGAccountPairingInternalId =
                                                         sqlDataReaderGetInGameToAccountPairing.GetInt32(ApplicationValues.INGAME_USER_ID_BG_ACCOUNT_PAIRING_QUERY_RESULT_COLUMN_OFFSET_PAIRING_INTERNAL_ID); ;
                                                     continueProcessing = true;
                                                 }
@@ -1042,13 +1045,57 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         break;
                                 }
 
-                                break;
+                            }
 
-                            case TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.MESSAGE_TYPE_ID_EXTERNAL_TO_BLOXGUARDIAN:
 
-                                // TEMP CODE
-                                logger.LogDebug("Message is External Endpoint to BloxGuardian");
-                                // END TEMP CODE
+
+
+                            break;
+
+                        case TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.MESSAGE_TYPE_ID_EXTERNAL_TO_BLOXGUARDIAN:
+
+                            // TEMP CODE
+                            logger.LogDebug("Message is External Endpoint to BloxGuardian");
+                            // END TEMP CODE
+
+                            messageToBloxGuardianInternalId = int.Parse(messageBody.Substring(messageBody.IndexOf(",") + 1));
+
+                            // Determine message origination source (i.e. function that called BloxGuardian API from In-Game endpoint)
+                            sqlCommandGetMessageToBloxGuardian.Parameters["@MessageToBloxGuardianInternalID"].Value = messageToBloxGuardianInternalId;
+                            sqlDataReaderGetMessageToBloxGuardian = await sqlCommandGetMessageToBloxGuardian.ExecuteReaderAsync();
+                            if (await sqlDataReaderGetMessageToBloxGuardian.ReadAsync())
+                            {
+
+                                messageToBloxGuardianExternalId = sqlDataReaderGetMessageToBloxGuardian.GetString(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_EXTERNAL_ID);
+                                messageOriginationTypeCode = sqlDataReaderGetMessageToBloxGuardian.GetInt32(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_MESSAGE_ORIGINATION_TYPE_CODE);
+
+                                if (!await sqlDataReaderGetMessageToBloxGuardian.IsDBNullAsync(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_PAYLOAD))
+                                {
+                                    payload = sqlDataReaderGetMessageToBloxGuardian.GetString(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_PAYLOAD);
+                                }
+
+                                allowedCommunicationPathInternalId = sqlDataReaderGetMessageToBloxGuardian.GetInt32(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_ALLOWED_COMMUNICATION_PATH_INTERNAL_ID);
+
+                                if (!await sqlDataReaderGetMessageToBloxGuardian.IsDBNullAsync(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_INGAME_USER_ID))
+                                {
+                                    inGameUserId = sqlDataReaderGetMessageToBloxGuardian.GetString(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_INGAME_USER_ID);
+                                }
+
+                                inGameEndpointInternalId = sqlDataReaderGetMessageToBloxGuardian.GetInt32(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_INGAME_ENDPOINT_INTERNAL_ID);
+                                externalEndpointInternalId = sqlDataReaderGetMessageToBloxGuardian.GetInt32(ApplicationValues.MSG_TO_BLOXGUARDIAN_QUERY_RESULT_COLUMN_OFFSET_EXTERNAL_ENDPOINT_INTERNAL_ID);
+                            }
+                            else
+                            {
+
+                                /// Database/System integrity issue
+                                logger.LogError("Unable to find record with Internal ID = {0} for Message to BloxGuardian", messageToBloxGuardianInternalId);
+
+                                continueProcessing = false;
+                            }
+                            await sqlDataReaderGetMessageToBloxGuardian.CloseAsync();
+
+                            if (continueProcessing)
+                            {
 
                                 switch ((TequaCreek.BloxGuardianDataModelLibrary.MessageOriginationType)messageOriginationTypeCode)
                                 {
@@ -1410,7 +1457,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                                   baseFileDirectory + Path.DirectorySeparatorChar + baseMessageFileName + "." + TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.BLOXGUARDIAN_MESSAGE_FILE_EXTENSION);
 
                                         // 3.)  Update status to show that file with message was written
-                                        sqlCommandUpdateMessageToBloxGuardian.Parameters["@ProcessingStatus"].Value = 
+                                        sqlCommandUpdateMessageToBloxGuardian.Parameters["@ProcessingStatus"].Value =
                                             (int)TequaCreek.BloxGuardianDataModelLibrary.MessageProcessingStatus.QueuedForMessagingSubsystem;
                                         sqlCommandUpdateMessageToBloxGuardian.Parameters["@MessageToBloxGuardianInternalID"].Value =
                                             messageToBloxGuardianInternalId;
@@ -1421,7 +1468,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                     case TequaCreek.BloxGuardianDataModelLibrary.MessageOriginationType.SendMessageToMobileDevice:
 
                                         // TEMP CODE
-                                        logger.LogDebug("Send to Mobile Device");
+                                        logger.LogDebug("Send Message to Mobile Device");
                                         // END TEMP CODE
 
                                         //////////////////////////////////////////////////////
@@ -1484,7 +1531,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                                 if (sqlDataReaderGetInGameToAccountPairing.GetInt32(ApplicationValues.INGAME_USER_ID_BG_ACCOUNT_PAIRING_QUERY_RESULT_COLUMN_OFFSET_PAIRING_STATUS) ==
                                                     (int)TequaCreek.BloxGuardianDataModelLibrary.PairingStatus.CompletedPairing)
                                                 {
-                                                    inGameUserBGAccountPairingInternalId = 
+                                                    inGameUserBGAccountPairingInternalId =
                                                         sqlDataReaderGetInGameToAccountPairing.GetInt32(ApplicationValues.INGAME_USER_ID_BG_ACCOUNT_PAIRING_QUERY_RESULT_COLUMN_OFFSET_PAIRING_INTERNAL_ID);
                                                     continueProcessing = true;
                                                 }
@@ -1552,55 +1599,169 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         break;
                                 }
 
-                                break;
-
-                            case TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.MESSAGE_TYPE_ID_BG_WEB_SERVICE_TO_BLOXGUARDIAN:
-
-
-                                // TEMP CODE
-                                logger.LogDebug("Message is Mobile to BloxGuardian");
-                                // END TEMP CODE
-
-
-                                /////////////////////////////////////////////////////
-                                //////  Mobile to BG - Send E-Mail Verification /////
-                                /////////////////////////////////////////////////////
-
-                                ///////////////////////////////////////////////////////////////
-                                //////  Mobile to BG - Send Pairing Notification Messages /////
-                                ///////////////////////////////////////////////////////////////
+                            }       // (continueProcessing)
 
 
 
+                            break;
 
-                                /*
-                                dynamicTemplateData.header = configuration["AppSettings:InitialValidateEMailHeader"];
-                                dynamicTemplateData.text = configuration["AppSettings:InitialValidateEMailText"];
-                                dynamicTemplateData.clickbackLink = configuration["AppSettings:InitialValidateClickbackLink"]
-                                                                       .Replace(TequaCreek.BloxGuardianDataModelLibrary
-                                                                                          .SharedConstantValues
-                                                                                          .REPLACE_TOKEN_BLOXGUARDIAN_ACCOUNT_ID, bloxGuardianAccountId);
-                                dynamicTemplateData.buttonText = configuration["AppSettings:InitialValidateButtonText"];
+                        case TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.MESSAGE_TYPE_ID_INTERSYSTEM_TO_BLOXGUARDIAN:
 
-                                SendGridMessage sendGridMessage = new SendGridMessage();
+                            // TEMP CODE
+                            logger.LogDebug("Message is Inter-System to BloxGuardian");
+                            // END TEMP CODE
 
-                                sendGridMessage.SetSubject(configuration["AppSettings:InitialValidateEMailSubject"]);
-                                sendGridMessage.SetFrom(new EmailAddress(configuration["AppSettings:EMailVerifySenderAddress"], 
-                                                             configuration["AppSettings:EMailVerifySenderName"]));
-                                sendGridMessage.AddTo(new EmailAddress(messageReceipentAddress, messageReceipentName));
-                                sendGridMessage.SetTemplateId(configuration["AppSettings:SendGridEMailVerifyTemplateID"]);
-                                sendGridMessage.SetTemplateData(dynamicTemplateData);
+                            switch ((TequaCreek.BloxGuardianDataModelLibrary.MessageOriginationType)messageOriginationTypeCode)
+                            {
+                                case TequaCreek.BloxGuardianDataModelLibrary.MessageOriginationType.InterSystemSendEmailVerification:
 
-                                var response = await client.SendEmailAsync(msg).ConfigureAwait(false);
+                                    // TEMP CODE
+                                    logger.LogDebug("Send Email Verification");
+                                    // END TEMP CODE
 
-                                Console.WriteLine($"Response: {response.StatusCode}");
-                                Console.WriteLine(response.Headers);
+                                    /////////////////////////////////////////////////////
+                                    //////  Mobile to BG - Send E-Mail Verification /////
+                                    /////////////////////////////////////////////////////
 
-                                 * */
+                                    /*
+                                    dynamicTemplateData.header = configuration["AppSettings:InitialValidateEMailHeader"];
+                                    dynamicTemplateData.text = configuration["AppSettings:InitialValidateEMailText"];
+                                    dynamicTemplateData.clickbackLink = configuration["AppSettings:InitialValidateClickbackLink"]
+                                                                           .Replace(TequaCreek.BloxGuardianDataModelLibrary
+                                                                                              .SharedConstantValues
+                                                                                              .REPLACE_TOKEN_BLOXGUARDIAN_ACCOUNT_ID, bloxGuardianAccountId);
+                                    dynamicTemplateData.buttonText = configuration["AppSettings:InitialValidateButtonText"];
 
-                                break;
+                                    SendGridMessage sendGridMessage = new SendGridMessage();
 
-                        }
+                                    sendGridMessage.SetSubject(configuration["AppSettings:InitialValidateEMailSubject"]);
+                                    sendGridMessage.SetFrom(new EmailAddress(configuration["AppSettings:EMailVerifySenderAddress"], 
+                                                                 configuration["AppSettings:EMailVerifySenderName"]));
+                                    sendGridMessage.AddTo(new EmailAddress(messageReceipentAddress, messageReceipentName));
+                                    sendGridMessage.SetTemplateId(configuration["AppSettings:SendGridEMailVerifyTemplateID"]);
+                                    sendGridMessage.SetTemplateData(dynamicTemplateData);
+
+                                    var response = await client.SendEmailAsync(msg).ConfigureAwait(false);
+
+                                    Console.WriteLine($"Response: {response.StatusCode}");
+                                    Console.WriteLine(response.Headers);
+
+                                     * */
+
+                                    break;
+
+                                case TequaCreek.BloxGuardianDataModelLibrary.MessageOriginationType.InterSystemNotifyPairingComplete:
+
+                                    inGameUserBGAccountPairingInternalId = int.Parse(messageBody.Substring(messageBody.IndexOf(",") + 1));
+
+                                    /////////////////////////////////////////////////////////////
+                                    //////  Mobile to BG - Send Pairing Completion Messages /////
+                                    /////////////////////////////////////////////////////////////
+
+                                    // TEMP CODE
+                                    logger.LogDebug("Send Pairing Completion Notification ");
+                                    // END TEMP CODE
+
+                                    sqlStatement = new System.Text.StringBuilder();
+                                    sqlStatement.Append("SELECT ACP.ingame_endpoint_internal_id, ACP.external_endpoint_internal_id, ");
+                                    sqlStatement.Append("       BGA.account_holder_last_name, BGA.account_holder_first_name, IGAP.ingame_user_id ");
+                                    sqlStatement.Append("  FROM ingame_user_bg_account_pairing IGAP ");
+                                    sqlStatement.Append("    INNER JOIN bloxguardian_account BGA ");
+                                    sqlStatement.Append("               ON IGAP.bloxguardian_account_internal_id = BGA.bloxguardian_account_internal_id ");
+                                    sqlStatement.Append("    INNER JOIN allowed_communication_path ACP ");
+                                    sqlStatement.Append("               ON IGAP.allowed_communication_path_internal_id = ACP.allowed_communication_path_internal_id ");
+                                    sqlStatement.Append("  WHERE IGAP.ingame_user_bg_account_pairing_internal_id = @InGameUserBGAccountPairingInternalID ");
+
+                                    sqlCommandGetInGameToAccountPairing = sqlConnection1.CreateCommand();
+                                    sqlCommandGetInGameToAccountPairing.CommandText = sqlStatement.ToString();
+                                    sqlCommandGetInGameToAccountPairing.CommandTimeout = 600;
+                                    sqlCommandGetInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@AllowedCommunicationPathInternalID", NpgsqlTypes.NpgsqlDbType.Integer));
+                                    sqlCommandGetInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@InGameUserId", NpgsqlTypes.NpgsqlDbType.Varchar, 20));
+
+                                    sqlCommandGetInGameToAccountPairing.Parameters["@AllowedCommunicationPathInternalID"].Value = 0;
+                                    sqlCommandGetInGameToAccountPairing.Parameters["@InGameUserId"].Value = "";
+                                    await sqlCommandGetInGameToAccountPairing.PrepareAsync();
+                                    sqlDataReaderGetInGameToAccountPairing = await sqlCommandGetInGameToAccountPairing.ExecuteReaderAsync();
+                                    if (await sqlDataReaderGetInGameToAccountPairing.ReadAsync())
+                                    {
+
+                                        inGameEndpointInternalId = sqlDataReaderGetInGameToAccountPairing.GetInt32(ApplicationValues.ACCOUNT_PAIRING_ENDPOINT_NOTIFY_QUERY_RESULT_COLUMN_OFFSET_INGAME_ENDPOINT_INTERNAL_ID);
+                                        externalEndpointInternalId = sqlDataReaderGetInGameToAccountPairing.GetInt32(ApplicationValues.ACCOUNT_PAIRING_ENDPOINT_NOTIFY_QUERY_RESULT_COLUMN_OFFSET_EXTERNAL_ENDPOINT_INTERNAL_ID);
+
+                                        int generatedSystemMessageId = int.Parse(System.DateTime.Now.ToString("MMddhhmmss"));
+
+                                        // 1.)  Write return message to file on file system for External Endpoint
+                                        baseMessageFileName = PadZeroLeft(generatedSystemMessageId, 10);
+                                        baseFileDirectory = this.configuration["AppSettings:ToInGameFileStorePrefix"] + Path.DirectorySeparatorChar +
+                                                            PadZeroLeft(inGameEndpointInternalId, 6);
+                                        Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
+
+                                        TequaCreek.BloxChannelDotNetAPI.Models.BloxGuardian.PairedAccountInformation pairedAccountInformationForEE =
+                                            new BloxChannelDotNetAPI.Models.BloxGuardian.PairedAccountInformation();
+
+                                        pairedAccountInformationForEE.accountHolderLastName =
+                                            sqlDataReaderGetInGameToAccountPairing.GetString(ApplicationValues.ACCOUNT_PAIRING_ENDPOINT_NOTIFY_QUERY_RESULT_COLUMN_OFFSET_ACCOUNT_HOLDER_LAST_NAME);
+                                        pairedAccountInformationForEE.accountHolderFirstName =
+                                            sqlDataReaderGetInGameToAccountPairing.GetString(ApplicationValues.ACCOUNT_PAIRING_ENDPOINT_NOTIFY_QUERY_RESULT_COLUMN_OFFSET_ACCOUNT_HOLDER_FIRST_NAME);
+                                        pairedAccountInformationForEE.inGameUserId =
+                                            sqlDataReaderGetInGameToAccountPairing.GetString(ApplicationValues.ACCOUNT_PAIRING_ENDPOINT_NOTIFY_QUERY_RESULT_COLUMN_OFFSET_INGAME_USER_ID);
+
+                                        fromBloxGuardianMessagePacket = new BloxChannelDotNetAPI.Models.BloxGuardian.FromBloxGuardianMessagePacket();
+
+                                        fromBloxGuardianMessagePacket.respondingToMessageToBloxGuardianExternalId =
+                                            TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.RESPONDING_TO_MESSAGE_ID_SENTINEL_VALUE_PAIRING_COMPLETE;
+                                        fromBloxGuardianMessagePacket.responsePayloadType = (int)TequaCreek.BloxChannelDotNetAPI.ResponsePayloadType.PairedAccountInformation;
+                                        fromBloxGuardianMessagePacket.responsePayload = Base64Encode(JsonConvert.SerializeObject(pairedAccountInformationForEE));
+
+                                        // Format return message as JSON object and save to file on filesystem
+                                        await File.WriteAllTextAsync(baseFileDirectory + Path.DirectorySeparatorChar + baseMessageFileName + "." + TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.BLOXGUARDIAN_MESSAGE_TEMPORARY_FILE_EXTENSION,
+                                                                        JsonConvert.SerializeObject(fromBloxGuardianMessagePacket));
+                                        File.Move(baseFileDirectory + Path.DirectorySeparatorChar + baseMessageFileName + "." + TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.BLOXGUARDIAN_MESSAGE_TEMPORARY_FILE_EXTENSION,
+                                                  baseFileDirectory + Path.DirectorySeparatorChar + baseMessageFileName + "." + TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.BLOXGUARDIAN_MESSAGE_FILE_EXTENSION);
+
+                                        baseMessageFileName = PadZeroLeft(generatedSystemMessageId, 10);
+                                        baseFileDirectory = this.configuration["AppSettings:ToExternalFileStorePrefix"] + Path.DirectorySeparatorChar +
+                                                            PadZeroLeft(externalEndpointInternalId, 6);
+                                        Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
+
+
+                                        // 1.)  Write return message to file on file system for In-Game Endpoint
+
+                                        TequaCreek.BloxChannelIGInternalAPI.Models.BloxGuardian.PairedAccountInformation pairedAccountInformationForIG =
+                                            new BloxChannelIGInternalAPI.Models.BloxGuardian.PairedAccountInformation();
+
+                                        pairedAccountInformationForIG.accountHolderLastName =
+                                            sqlDataReaderGetInGameToAccountPairing.GetString(ApplicationValues.ACCOUNT_PAIRING_ENDPOINT_NOTIFY_QUERY_RESULT_COLUMN_OFFSET_ACCOUNT_HOLDER_LAST_NAME);
+                                        pairedAccountInformationForIG.accountHolderFirstName =
+                                            sqlDataReaderGetInGameToAccountPairing.GetString(ApplicationValues.ACCOUNT_PAIRING_ENDPOINT_NOTIFY_QUERY_RESULT_COLUMN_OFFSET_ACCOUNT_HOLDER_FIRST_NAME);
+                                        pairedAccountInformationForIG.inGameUserId =
+                                            sqlDataReaderGetInGameToAccountPairing.GetString(ApplicationValues.ACCOUNT_PAIRING_ENDPOINT_NOTIFY_QUERY_RESULT_COLUMN_OFFSET_INGAME_USER_ID);
+
+                                        var fromBloxGuardianMessagePacketForIG = new BloxChannelIGInternalAPI.Models.BloxGuardian.FromBloxGuardianMessagePacket();
+
+                                        fromBloxGuardianMessagePacketForIG.respondingToMessageToBloxGuardianExternalId =
+                                            TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.RESPONDING_TO_MESSAGE_ID_SENTINEL_VALUE_PAIRING_COMPLETE;
+                                        fromBloxGuardianMessagePacketForIG.responsePayloadType = (int)TequaCreek.BloxChannelDotNetAPI.ResponsePayloadType.PairedAccountInformation;
+                                        fromBloxGuardianMessagePacketForIG.responsePayload = Base64Encode(JsonConvert.SerializeObject(pairedAccountInformationForIG));
+
+                                        // Format return message as JSON object and save to file on filesystem
+                                        await File.WriteAllTextAsync(baseFileDirectory + Path.DirectorySeparatorChar + baseMessageFileName + "." + TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.BLOXGUARDIAN_MESSAGE_TEMPORARY_FILE_EXTENSION,
+                                                                        JsonConvert.SerializeObject(fromBloxGuardianMessagePacket));
+                                        File.Move(baseFileDirectory + Path.DirectorySeparatorChar + baseMessageFileName + "." + TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.BLOXGUARDIAN_MESSAGE_TEMPORARY_FILE_EXTENSION,
+                                                  baseFileDirectory + Path.DirectorySeparatorChar + baseMessageFileName + "." + TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.BLOXGUARDIAN_MESSAGE_FILE_EXTENSION);
+                                    }
+                                    else
+                                    {
+                                        logger.LogWarning("System integrity issue - cannot find account pairing record in BloxGuardianMessageProcessingService::Worker::MessageReceivedAsync");
+                                        continueProcessing = false;
+                                    }       // (await sqlDataReaderGetInGameToAccountPairing.ReadAsync())
+                                    await sqlDataReaderGetInGameToAccountPairing.CloseAsync();
+
+                                    break;
+                            }
+
+                            break;
+
                     }       // (continueProcessing)
 
                     await sqlConnection1.CloseAsync();
