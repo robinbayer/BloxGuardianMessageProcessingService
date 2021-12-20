@@ -99,7 +99,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                 /// From BloxChannel messages channel ///
                 /////////////////////////////////////////
 
-                queueName = string.Format(TequaCreek.BloxChannelDataModelLibrary.SharedConstantValues.MESSAGE_QUEUE_NAME_PATTERN_BLOXCHANNEL_TO_BLOXGUARDIAN,
+                queueName = string.Format(TequaCreek.BloxChannelDataModelLibrary.SharedConstantValues.MESSAGE_QUEUE_NAME_PATTERN_INTERSYSTEM_TO_BLOXGUARDIAN,
                                             this.processingServerId);
                 logger.LogInformation("Setting up From-BloxGuardian queue {0} definition (if not already exists)", queueName);
 
@@ -203,13 +203,15 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
             int externalEndpointInternalId = 0;
             bool continueProcessing = true;
             int inGameUserBGAccountPairingInternalId = 0;
+            int bloxGuardianAccountInternalId = 0;
 
             NpgsqlConnection sqlConnection1;
             NpgsqlConnection sqlConnection2;
 
             NpgsqlCommand sqlCommandGetMessageToBloxGuardian;
             NpgsqlDataReader sqlDataReaderGetMessageToBloxGuardian;
-
+            NpgsqlCommand sqlCommandGetBloxGuardianAccount;
+            NpgsqlDataReader sqlDataReaderGetBloxGuardianAccount;
             NpgsqlCommand sqlCommandGetInGameToAccountPairing;
             NpgsqlDataReader sqlDataReaderGetInGameToAccountPairing;
             NpgsqlCommand sqlCommandInsertInGameToAccountPairing;
@@ -1619,44 +1621,123 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                     logger.LogDebug("Send Email Verification");
                                     // END TEMP CODE
 
-                                    /////////////////////////////////////////////////////
-                                    //////  Mobile to BG - Send E-Mail Verification /////
-                                    /////////////////////////////////////////////////////
+                                    ///////////////////////////////////////////////////////////
+                                    //////  Inter-System to BG - Send E-Mail Verification /////
+                                    ///////////////////////////////////////////////////////////
 
-                                    /*
-                                    dynamicTemplateData.header = configuration["AppSettings:InitialValidateEMailHeader"];
-                                    dynamicTemplateData.text = configuration["AppSettings:InitialValidateEMailText"];
-                                    dynamicTemplateData.clickbackLink = configuration["AppSettings:InitialValidateClickbackLink"]
-                                                                           .Replace(TequaCreek.BloxGuardianDataModelLibrary
-                                                                                              .SharedConstantValues
-                                                                                              .REPLACE_TOKEN_BLOXGUARDIAN_ACCOUNT_ID, bloxGuardianAccountId);
-                                    dynamicTemplateData.buttonText = configuration["AppSettings:InitialValidateButtonText"];
+                                    bloxGuardianAccountInternalId = int.Parse(messageBody.Substring(messageBody.IndexOf(",") + 1));
 
-                                    SendGridMessage sendGridMessage = new SendGridMessage();
+                                    sqlStatement = new System.Text.StringBuilder();
+                                    sqlStatement.Append("SELECT BGA.bloxguardian_account_external_id, BGA.account_holder_last_name, ");
+                                    sqlStatement.Append("       BGA.account_holder_first_name, BGA.email_address ");
+                                    sqlStatement.Append("  FROM ingame_bloxguardian_account BGA ");
+                                    sqlStatement.Append("  WHERE BGA.bloxguardian_account_internal_id = @BloxGuardianAccountInternalID ");
 
-                                    sendGridMessage.SetSubject(configuration["AppSettings:InitialValidateEMailSubject"]);
-                                    sendGridMessage.SetFrom(new EmailAddress(configuration["AppSettings:EMailVerifySenderAddress"], 
-                                                                 configuration["AppSettings:EMailVerifySenderName"]));
-                                    sendGridMessage.AddTo(new EmailAddress(messageReceipentAddress, messageReceipentName));
-                                    sendGridMessage.SetTemplateId(configuration["AppSettings:SendGridEMailVerifyTemplateID"]);
-                                    sendGridMessage.SetTemplateData(dynamicTemplateData);
+                                    sqlCommandGetBloxGuardianAccount = sqlConnection1.CreateCommand();
+                                    sqlCommandGetBloxGuardianAccount.CommandText = sqlStatement.ToString();
+                                    sqlCommandGetBloxGuardianAccount.CommandTimeout = 600;
+                                    sqlCommandGetBloxGuardianAccount.Parameters.Add(new NpgsqlParameter("@BloxGuardianAccountInternalID", NpgsqlTypes.NpgsqlDbType.Integer));
 
-                                    var response = await client.SendEmailAsync(msg).ConfigureAwait(false);
+                                    sqlCommandGetBloxGuardianAccount.Parameters["@BloxGuardianAccountInternalID"].Value = 0;
+                                    await sqlCommandGetBloxGuardianAccount.PrepareAsync();
 
-                                    Console.WriteLine($"Response: {response.StatusCode}");
-                                    Console.WriteLine(response.Headers);
 
-                                     * */
+                                    sqlCommandGetBloxGuardianAccount.Parameters["@BloxGuardianAccountInternalID"].Value = bloxGuardianAccountInternalId;
+                                    sqlDataReaderGetBloxGuardianAccount = await sqlCommandGetBloxGuardianAccount.ExecuteReaderAsync();
+                                    if (await sqlDataReaderGetBloxGuardianAccount.ReadAsync())
+                                    {
+
+                                        string bloxGuardianAccountExternalId = 
+                                            sqlDataReaderGetBloxGuardianAccount.GetString(ApplicationValues.BLOXGUARDIAN_ACCOUNT_QUERY_RESULT_COLUMN_OFFSET_ACCOUNT_EXTERNAL_ID);
+                                        string accountHolderLastName =
+                                            sqlDataReaderGetBloxGuardianAccount.GetString(ApplicationValues.BLOXGUARDIAN_ACCOUNT_QUERY_RESULT_COLUMN_OFFSET_ACCOUNT_HOLDER_LAST_NAME);
+                                        string accountHolderFirstName =
+                                            sqlDataReaderGetBloxGuardianAccount.GetString(ApplicationValues.BLOXGUARDIAN_ACCOUNT_QUERY_RESULT_COLUMN_OFFSET_ACCOUNT_HOLDER_FIRST_NAME);
+                                        string eMailAddress = 
+                                            sqlDataReaderGetBloxGuardianAccount.GetString(ApplicationValues.BLOXGUARDIAN_ACCOUNT_QUERY_RESULT_COLUMN_OFFSET_EMAIL_ADDRESS);
+
+                                        // TEMP CODE
+                                        logger.LogDebug("Sending verification email message to BloxGuardian Account External ID {0} at address {1} - name = {2}",
+                                                        bloxGuardianAccountExternalId, eMailAddress, accountHolderFirstName + " " + accountHolderLastName);
+                                        // END TEMP CODE
+
+
+                                        string initializationVector = TequaCreek.BloxGuardianDataModelLibrary
+                                                                                 .SharedFunctions.Base64Encode(TequaCreek.BloxGuardianDataModelLibrary
+                                                                                                                         .SharedConstantValues
+                                                                                                                         .EMAIL_VERIFICATION_CODE_INITIALIZATION_VECTOR);
+                                        string encryptionKey = TequaCreek.BloxGuardianDataModelLibrary
+                                                                         .SharedFunctions.Base64Encode(TequaCreek.BloxGuardianDataModelLibrary
+                                                                                                                 .SharedConstantValues
+                                                                                                                 .EMAIL_VERIFICATION_CODE_ENCRYPTION_KEY);
+                                        string encryptedEmailVerificationCode = TequaCreek.BloxGuardianDataModelLibrary.SharedFunctions
+                                                                                          .AES_IV_Encrypt(bloxGuardianAccountExternalId, initializationVector, 
+                                                                                                          encryptionKey);
+
+                                        TequaCreek.BloxGuardianDataModelLibrary.Models.EmailVerifyDynamicTemplateData dynamicTemplateData =
+                                            new BloxGuardianDataModelLibrary.Models.EmailVerifyDynamicTemplateData();
+
+                                        dynamicTemplateData.header = configuration["AppSettings:InitialValidateEMailHeader"];
+                                        dynamicTemplateData.text = configuration["AppSettings:InitialValidateEMailText"];
+                                        dynamicTemplateData.clickbackLink = configuration["AppSettings:InitialValidateClickbackLink"]
+                                                                               .Replace(TequaCreek.BloxGuardianDataModelLibrary
+                                                                                                  .SharedConstantValues.REPLACE_TOKEN_ENCRYPTED_EMAIL_VERIFICATION_CODE,
+                                                                                        encryptedEmailVerificationCode);
+                                        dynamicTemplateData.buttonText = configuration["AppSettings:InitialValidateButtonText"];
+
+                                        SendGridMessage sendGridMessage = new SendGridMessage();
+
+                                        sendGridMessage.SetSubject(configuration["AppSettings:InitialValidateEMailSubject"]);
+                                        sendGridMessage.SetFrom(new EmailAddress(configuration["AppSettings:EMailVerifySenderAddress"],
+                                                                     configuration["AppSettings:EMailVerifySenderName"]));
+                                        sendGridMessage.AddTo(new EmailAddress(eMailAddress, accountHolderFirstName + " " + accountHolderLastName));
+                                        sendGridMessage.SetTemplateId(configuration["AppSettings:SendGridEMailVerifyTemplateID"]);
+                                        sendGridMessage.SetTemplateData(dynamicTemplateData);
+
+                                        var response = await sendGridClient.SendEmailAsync(sendGridMessage).ConfigureAwait(false);
+
+                                        if (!response.IsSuccessStatusCode)
+                                        {
+                                            logger.LogError("Error sending verification email message to BloxGuardian Account External ID {0} at address {1} - Status Code = {2}",
+                                                            bloxGuardianAccountExternalId, eMailAddress, response.StatusCode);
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        logger.LogWarning("System integrity issue - Cannot find BloxGuardian Account record in BloxGuardianAccountMessageProcessingWorker::MessageReceivedAsync()");
+                                    }       // (await sqlDataReaderGetBloxGuardianAccount.ReadAsync())
+
 
                                     break;
+
+                                case TequaCreek.BloxGuardianDataModelLibrary.MessageOriginationType.InterSystemCompletedEmailVerification:
+
+                                    bloxGuardianAccountInternalId = int.Parse(messageBody.Substring(messageBody.IndexOf(",") + 1));
+
+                                    // TEMP CODE
+                                    logger.LogDebug("Completed Email Verification");
+                                    // END TEMP CODE
+
+                                    ///////////////////////////////////////////////////////////////
+                                    //////  Intersystem to BG - Completed E-Mail Verification /////
+                                    ///////////////////////////////////////////////////////////////
+
+
+                                    // PROGRAMMER'S NOTE:  Push message to mobile device for BG Account
+
+
+                                    break;
+
+
 
                                 case TequaCreek.BloxGuardianDataModelLibrary.MessageOriginationType.InterSystemNotifyPairingComplete:
 
                                     inGameUserBGAccountPairingInternalId = int.Parse(messageBody.Substring(messageBody.IndexOf(",") + 1));
 
-                                    /////////////////////////////////////////////////////////////
-                                    //////  Mobile to BG - Send Pairing Completion Messages /////
-                                    /////////////////////////////////////////////////////////////
+                                    //////////////////////////////////////////////////////////////////
+                                    //////  Intersystem to BG - Send Pairing Completion Messages /////
+                                    //////////////////////////////////////////////////////////////////
 
                                     // TEMP CODE
                                     logger.LogDebug("Send Pairing Completion Notification ");
