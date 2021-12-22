@@ -224,7 +224,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
             NpgsqlCommand sqlCommandUpdateMessageToBloxGuardian;
 
             // TEMP CODE
-            logger.LogDebug("Entering Worker:MessageReceivedAsync()");
+            logger.LogTrace("Entering Worker:MessageReceivedAsync()");
             // END TEMP CODE
 
             try
@@ -528,6 +528,9 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                             baseMessageFileName = PadZeroLeft(messageToBloxGuardianInternalId, 10);
                                             baseFileDirectory = this.configuration["AppSettings:ToInGameFileStorePrefix"] + Path.DirectorySeparatorChar +
                                                                 PadZeroLeft(inGameEndpointInternalId, 6);
+
+                                            logger.LogDebug("Attempting to create directory {0} if not exists", baseFileDirectory);
+
                                             Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
 
                                             fromBloxGuardianMessagePacket = new BloxChannelDotNetAPI.Models.BloxGuardian.FromBloxGuardianMessagePacket();
@@ -622,6 +625,9 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         baseMessageFileName = PadZeroLeft(messageToBloxGuardianInternalId, 10);
                                         baseFileDirectory = this.configuration["AppSettings:ToInGameFileStorePrefix"] + Path.DirectorySeparatorChar +
                                                             PadZeroLeft(inGameEndpointInternalId, 6);
+
+                                        logger.LogDebug("Attempting to create directory {0} if not exists", baseFileDirectory);
+
                                         Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
 
                                         fromBloxGuardianMessagePacket = new BloxChannelDotNetAPI.Models.BloxGuardian.FromBloxGuardianMessagePacket();
@@ -726,6 +732,9 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                             baseMessageFileName = PadZeroLeft(messageToBloxGuardianInternalId, 10);
                                             baseFileDirectory = this.configuration["AppSettings:ToInGameFileStorePrefix"] + Path.DirectorySeparatorChar +
                                                                 PadZeroLeft(inGameEndpointInternalId, 6);
+
+                                            logger.LogDebug("Attempting to create directory {0} if not exists", baseFileDirectory);
+
                                             Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
 
                                             fromBloxGuardianMessagePacket = new BloxChannelDotNetAPI.Models.BloxGuardian.FromBloxGuardianMessagePacket();
@@ -817,6 +826,9 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         baseMessageFileName = PadZeroLeft(messageToBloxGuardianInternalId, 10);
                                         baseFileDirectory = this.configuration["AppSettings:ToInGameFileStorePrefix"] + Path.DirectorySeparatorChar +
                                                             PadZeroLeft(inGameEndpointInternalId, 6);
+
+                                        logger.LogDebug("Attempting to create directory {0} if not exists", baseFileDirectory);
+
                                         Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
 
                                         fromBloxGuardianMessagePacket = new BloxChannelDotNetAPI.Models.BloxGuardian.FromBloxGuardianMessagePacket();
@@ -889,6 +901,9 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         baseMessageFileName = PadZeroLeft(messageToBloxGuardianInternalId, 10);
                                         baseFileDirectory = this.configuration["AppSettings:ToInGameFileStorePrefix"] + Path.DirectorySeparatorChar +
                                                             PadZeroLeft(inGameEndpointInternalId, 6);
+
+                                        logger.LogDebug("Attempting to create directory {0} if not exists", baseFileDirectory);
+
                                         Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
 
                                         fromBloxGuardianMessagePacket = new BloxChannelDotNetAPI.Models.BloxGuardian.FromBloxGuardianMessagePacket();
@@ -1019,6 +1034,9 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                                 baseMessageFileName = PadZeroLeft(messageToBloxGuardianInternalId, 10);
                                                 baseFileDirectory = this.configuration["AppSettings:ToInGameFileStorePrefix"] + Path.DirectorySeparatorChar +
                                                                     PadZeroLeft(inGameEndpointInternalId, 6);
+
+                                                logger.LogDebug("Attempting to create directory {0} if not exists", baseFileDirectory);
+
                                                 Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
 
                                                 fromBloxGuardianMessagePacket = new BloxChannelDotNetAPI.Models.BloxGuardian.FromBloxGuardianMessagePacket();
@@ -1171,6 +1189,9 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         baseMessageFileName = PadZeroLeft(messageToBloxGuardianInternalId, 10);
                                         baseFileDirectory = this.configuration["AppSettings:ToExternalFileStorePrefix"] + Path.DirectorySeparatorChar +
                                                             PadZeroLeft(externalEndpointInternalId, 6);
+
+                                        logger.LogDebug("Attempting to create directory {0} if not exists", baseFileDirectory);
+
                                         Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
 
                                         fromBloxGuardianMessagePacket = new BloxChannelDotNetAPI.Models.BloxGuardian.FromBloxGuardianMessagePacket();
@@ -1277,6 +1298,8 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         baseMessageFileName = PadZeroLeft(messageToBloxGuardianInternalId, 10);
                                         baseFileDirectory = this.configuration["AppSettings:ToExternalFileStorePrefix"] + Path.DirectorySeparatorChar +
                                                             PadZeroLeft(externalEndpointInternalId, 6);
+                                        logger.LogDebug("Attempting to create directory {0} if not exists", baseFileDirectory);
+
                                         Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
 
                                         fromBloxGuardianMessagePacket = new BloxChannelDotNetAPI.Models.BloxGuardian.FromBloxGuardianMessagePacket();
@@ -1367,6 +1390,9 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         baseMessageFileName = PadZeroLeft(messageToBloxGuardianInternalId, 10);
                                         baseFileDirectory = this.configuration["AppSettings:ToExternalFileStorePrefix"] + Path.DirectorySeparatorChar +
                                                             PadZeroLeft(externalEndpointInternalId, 6);
+
+                                        logger.LogDebug("Attempting to create directory {0} if not exists", baseFileDirectory);
+
                                         Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
 
                                         fromBloxGuardianMessagePacket = new BloxChannelDotNetAPI.Models.BloxGuardian.FromBloxGuardianMessagePacket();
@@ -1444,6 +1470,9 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         baseMessageFileName = PadZeroLeft(messageToBloxGuardianInternalId, 10);
                                         baseFileDirectory = this.configuration["AppSettings:ToExternalFileStorePrefix"] + Path.DirectorySeparatorChar +
                                                             PadZeroLeft(externalEndpointInternalId, 6);
+
+                                        logger.LogDebug("Attempting to create directory {0} if not exists", baseFileDirectory);
+
                                         Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
 
                                         fromBloxGuardianMessagePacket = new BloxChannelDotNetAPI.Models.BloxGuardian.FromBloxGuardianMessagePacket();
@@ -1573,6 +1602,9 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                                 baseMessageFileName = PadZeroLeft(messageToBloxGuardianInternalId, 10);
                                                 baseFileDirectory = this.configuration["AppSettings:ToExternalFileStorePrefix"] + Path.DirectorySeparatorChar +
                                                                     PadZeroLeft(externalEndpointInternalId, 6);
+
+                                                logger.LogDebug("Attempting to create directory {0} if not exists", baseFileDirectory);
+
                                                 Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
 
                                                 fromBloxGuardianMessagePacket = new BloxChannelDotNetAPI.Models.BloxGuardian.FromBloxGuardianMessagePacket();
@@ -1775,6 +1807,9 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         baseMessageFileName = PadZeroLeft(generatedSystemMessageId, 10);
                                         baseFileDirectory = this.configuration["AppSettings:ToInGameFileStorePrefix"] + Path.DirectorySeparatorChar +
                                                             PadZeroLeft(inGameEndpointInternalId, 6);
+
+                                        logger.LogDebug("Attempting to create directory {0} if not exists", baseFileDirectory);
+
                                         Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
 
                                         TequaCreek.BloxChannelDotNetAPI.Models.BloxGuardian.PairedAccountInformation pairedAccountInformationForEE =
@@ -1803,6 +1838,9 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         baseMessageFileName = PadZeroLeft(generatedSystemMessageId, 10);
                                         baseFileDirectory = this.configuration["AppSettings:ToExternalFileStorePrefix"] + Path.DirectorySeparatorChar +
                                                             PadZeroLeft(externalEndpointInternalId, 6);
+
+                                        logger.LogDebug("Attempting to create directory {0} if not exists", baseFileDirectory);
+
                                         Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
 
 

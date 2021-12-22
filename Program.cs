@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NLog.Web;
+using NLog.Config;
 using System.Runtime.InteropServices;
 using SendGrid.Extensions.DependencyInjection;
 using System.Reflection;
@@ -19,7 +20,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
             //var logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             var isProd = environment == Microsoft.Extensions.Hosting.Environments.Production;
-            var logger = NLogBuilder.ConfigureNLog(isProd ? "nlog.config" : "nlog.debug.config").GetCurrentClassLogger();
+            var logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
 
             try
             {
