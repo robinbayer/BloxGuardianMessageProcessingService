@@ -1,0 +1,19 @@
+[Unit]
+Description=BloxGuardian Message Processing  Service
+
+[Service]
+ExecStartPre=-/bin/sleep 20
+WorkingDirectory=/srv/bloxguardian-messageprocessingservice
+ExecStart=/usr/bin/dotnet /srv/bloxguardian-messageprocessingservice/TequaCreek.BloxGuardianMessageProcessingService.dll
+Restart=always
+# Restart service after 10 seconds if the dotnet service crashes:
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=bloxguardian-messageprocessingservice
+User=webdeployrun
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+Environment=SENDGRID_API_KEY=<API KEY GOES HERE>
+
+[Install]
+WantedBy=multi-user.target
