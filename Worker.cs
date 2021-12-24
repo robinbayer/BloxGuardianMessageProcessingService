@@ -1709,17 +1709,18 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         TequaCreek.BloxGuardianDataModelLibrary.Models.EmailVerifyDynamicTemplateData dynamicTemplateData =
                                             new BloxGuardianDataModelLibrary.Models.EmailVerifyDynamicTemplateData();
 
-                                        dynamicTemplateData.header = configuration["AppSettings:InitialValidateEMailHeader"];
-                                        dynamicTemplateData.text = configuration["AppSettings:InitialValidateEMailText"];
-                                        dynamicTemplateData.clickbackLink = configuration["AppSettings:InitialValidateClickbackLink"]
-                                                                               .Replace(TequaCreek.BloxGuardianDataModelLibrary
-                                                                                                  .SharedConstantValues.REPLACE_TOKEN_ENCRYPTED_EMAIL_VERIFICATION_CODE,
+                                        dynamicTemplateData.header = configuration["AppSettings:ValidateEMailHeader"];
+                                        dynamicTemplateData.text = configuration["AppSettings:ValidateEMailText"];
+                                        dynamicTemplateData.clickbackLink = configuration["AppSettings:ValidateClickbackLink"]
+                                                                               .Replace(TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.REPLACE_TOKEN_CALLBACK_URL,
+                                                                                        configuration["AppSettings:ValidateWSCallbackUrl"])
+                                                                               .Replace(TequaCreek.BloxGuardianDataModelLibrary.SharedConstantValues.REPLACE_TOKEN_ENCRYPTED_EMAIL_VERIFICATION_CODE,
                                                                                         encryptedEmailVerificationCode);
-                                        dynamicTemplateData.buttonText = configuration["AppSettings:InitialValidateButtonText"];
+                                        dynamicTemplateData.buttonText = configuration["AppSettings:ValidateButtonText"];
 
                                         SendGridMessage sendGridMessage = new SendGridMessage();
 
-                                        sendGridMessage.SetSubject(configuration["AppSettings:InitialValidateEMailSubject"]);
+                                        sendGridMessage.SetSubject(configuration["AppSettings:ValidateEMailSubject"]);
                                         sendGridMessage.SetFrom(new EmailAddress(configuration["AppSettings:EMailVerifySenderAddress"],
                                                                      configuration["AppSettings:EMailVerifySenderName"]));
                                         sendGridMessage.AddTo(new EmailAddress(eMailAddress, accountHolderFirstName + " " + accountHolderLastName));
