@@ -196,6 +196,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
             int messageToBloxGuardianInternalId;
             string messageToBloxGuardianExternalId = "";
             int messageOriginationTypeCode = 0;
+            int messageProcessingServiceTaskTypeCode = 0;
             string payload = null;
             int allowedCommunicationPathInternalId = 0;
             string inGameUserId = null;
@@ -222,6 +223,8 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
             NpgsqlCommand sqlCommandRemovePendingMessagesForPairedAccount;
             NpgsqlCommand sqlCommandInsertPendingMessageForPairedAccount;
             NpgsqlCommand sqlCommandUpdateMessageToBloxGuardian;
+            NpgsqlCommand sqlCommandGetAllowedCommunicationPath;
+            NpgsqlDataReader sqlDataReaderGetAllowedCommunicationPath;
 
             // TEMP CODE
             logger.LogTrace("Entering Worker:MessageReceivedAsync()");
@@ -1643,19 +1646,26 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                             logger.LogDebug("Message is Inter-System to BloxGuardian");
                             // END TEMP CODE
 
-                            switch ((TequaCreek.BloxGuardianDataModelLibrary.MessageOriginationType)messageOriginationTypeCode)
-                            {
-                                case TequaCreek.BloxGuardianDataModelLibrary.MessageOriginationType.InterSystemSendEmailVerification:
+                            // Determine task type here
+                            int commaPos1 = messageBody.IndexOf(",");
+                            int commaPos2 = messageBody.IndexOf(",", commaPos1 + 1);
 
-                                    // TEMP CODE
-                                    logger.LogDebug("Send Email Verification");
-                                    // END TEMP CODE
+                            messageProcessingServiceTaskTypeCode = int.Parse(messageBody.Substring(commaPos1 + 1, commaPos2 - commaPos1));
+
+                            switch ((TequaCreek.BloxGuardianDataModelLibrary.MessageProcessingServiceTaskType)messageProcessingServiceTaskTypeCode)
+                            {
+                                case TequaCreek.BloxGuardianDataModelLibrary.MessageProcessingServiceTaskType.SendEMailVerification:
 
                                     ///////////////////////////////////////////////////////////
                                     //////  Inter-System to BG - Send E-Mail Verification /////
                                     ///////////////////////////////////////////////////////////
 
-                                    bloxGuardianAccountInternalId = int.Parse(messageBody.Substring(messageBody.IndexOf(",") + 1));
+                                    // TEMP CODE
+                                    logger.LogDebug("Send Email Verification");
+                                    // END TEMP CODE
+
+                                    commaPos1 = messageBody.IndexOf(",", commaPos2 + 1);
+                                    bloxGuardianAccountInternalId = int.Parse(messageBody.Substring(commaPos2 + 1, commaPos1 - commaPos2));
 
                                     sqlStatement = new System.Text.StringBuilder();
                                     sqlStatement.Append("SELECT BGA.bloxguardian_account_external_id, BGA.account_holder_last_name, ");
@@ -1742,18 +1752,18 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
 
                                     break;
 
-                                case TequaCreek.BloxGuardianDataModelLibrary.MessageOriginationType.InterSystemCompletedEmailVerification:
-
-                                    bloxGuardianAccountInternalId = int.Parse(messageBody.Substring(messageBody.IndexOf(",") + 1));
-
-                                    // TEMP CODE
-                                    logger.LogDebug("Completed Email Verification");
-                                    // END TEMP CODE
+                                case TequaCreek.BloxGuardianDataModelLibrary.MessageProcessingServiceTaskType.CompletedEmailVerification:
 
                                     ///////////////////////////////////////////////////////////////
                                     //////  Intersystem to BG - Completed E-Mail Verification /////
                                     ///////////////////////////////////////////////////////////////
 
+                                    // TEMP CODE
+                                    logger.LogDebug("Completed Email Verification");
+                                    // END TEMP CODE
+
+                                    commaPos1 = messageBody.IndexOf(",", commaPos2 + 1);
+                                    bloxGuardianAccountInternalId = int.Parse(messageBody.Substring(commaPos2 + 1, commaPos1 - commaPos2));
 
 
 
@@ -1765,10 +1775,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                     break;
 
 
-
-                                case TequaCreek.BloxGuardianDataModelLibrary.MessageOriginationType.InterSystemNotifyPairingComplete:
-
-                                    inGameUserBGAccountPairingInternalId = int.Parse(messageBody.Substring(messageBody.IndexOf(",") + 1));
+                                case TequaCreek.BloxGuardianDataModelLibrary.MessageProcessingServiceTaskType.CompletedAccountPairing:
 
                                     //////////////////////////////////////////////////////////////////
                                     //////  Intersystem to BG - Send Pairing Completion Messages /////
@@ -1777,6 +1784,9 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                     // TEMP CODE
                                     logger.LogDebug("Send Pairing Completion Notification ");
                                     // END TEMP CODE
+
+                                    commaPos1 = messageBody.IndexOf(",", commaPos2 + 1);
+                                    inGameUserBGAccountPairingInternalId = int.Parse(messageBody.Substring(commaPos2 + 1, commaPos1 - commaPos2));
 
                                     sqlStatement = new System.Text.StringBuilder();
                                     sqlStatement.Append("SELECT ACP.ingame_endpoint_internal_id, ACP.external_endpoint_internal_id, ");
@@ -1792,11 +1802,9 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                     sqlCommandGetInGameToAccountPairing = sqlConnection1.CreateCommand();
                                     sqlCommandGetInGameToAccountPairing.CommandText = sqlStatement.ToString();
                                     sqlCommandGetInGameToAccountPairing.CommandTimeout = 600;
-                                    sqlCommandGetInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@AllowedCommunicationPathInternalID", NpgsqlTypes.NpgsqlDbType.Integer));
-                                    sqlCommandGetInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@InGameUserId", NpgsqlTypes.NpgsqlDbType.Varchar, 20));
+                                    sqlCommandGetInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@InGameUserBGAccountPairingInternalID", NpgsqlTypes.NpgsqlDbType.Integer));
 
-                                    sqlCommandGetInGameToAccountPairing.Parameters["@AllowedCommunicationPathInternalID"].Value = 0;
-                                    sqlCommandGetInGameToAccountPairing.Parameters["@InGameUserId"].Value = "";
+                                    sqlCommandGetInGameToAccountPairing.Parameters["@InGameUserBGAccountPairingInternalID"].Value = 0;
                                     await sqlCommandGetInGameToAccountPairing.PrepareAsync();
                                     sqlDataReaderGetInGameToAccountPairing = await sqlCommandGetInGameToAccountPairing.ExecuteReaderAsync();
                                     if (await sqlDataReaderGetInGameToAccountPairing.ReadAsync())
@@ -1882,44 +1890,40 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
 
                                     break;
 
-                                case TequaCreek.BloxGuardianDataModelLibrary.MessageOriginationType.InterSystemNotifyPairingRemoved:
+                                case TequaCreek.BloxGuardianDataModelLibrary.MessageProcessingServiceTaskType.NotifyRemovedPairing:
 
-                                    inGameUserBGAccountPairingInternalId = int.Parse(messageBody.Substring(messageBody.IndexOf(",") + 1));
-
-                                    //////////////////////////////////////////////////////////////////
+                                    ///////////////////////////////////////////////////////////////
                                     //////  Intersystem to BG - Send Pairing Removed Messages /////
-                                    //////////////////////////////////////////////////////////////////
+                                    ///////////////////////////////////////////////////////////////
 
                                     // TEMP CODE
-                                    logger.LogDebug("Send Pairing Completion Notification ");
+                                    logger.LogDebug("Send Pairing Removed Notification ");
                                     // END TEMP CODE
 
+                                    commaPos1 = messageBody.IndexOf(",", commaPos2 + 1);
+                                    allowedCommunicationPathInternalId = int.Parse(messageBody.Substring(commaPos2 + 1, commaPos1 - commaPos2));
+                                    inGameUserId = messageBody.Substring(commaPos1 + 1);
+
                                     sqlStatement = new System.Text.StringBuilder();
-                                    sqlStatement.Append("SELECT ACP.ingame_endpoint_internal_id, ACP.external_endpoint_internal_id, ");
-                                    sqlStatement.Append("       BGA.account_holder_last_name, BGA.account_holder_first_name, IGAP.ingame_user_id, ");
-                                    sqlStatement.Append("       BGA.allow_share_location_info, BGA.allow_payment_txn_request");
-                                    sqlStatement.Append("  FROM ingame_user_bg_account_pairing IGAP ");
-                                    sqlStatement.Append("    INNER JOIN bloxguardian_account BGA ");
-                                    sqlStatement.Append("               ON IGAP.bloxguardian_account_internal_id = BGA.bloxguardian_account_internal_id ");
-                                    sqlStatement.Append("    INNER JOIN allowed_communication_path ACP ");
-                                    sqlStatement.Append("               ON IGAP.allowed_communication_path_internal_id = ACP.allowed_communication_path_internal_id ");
-                                    sqlStatement.Append("  WHERE IGAP.ingame_user_bg_account_pairing_internal_id = @InGameUserBGAccountPairingInternalID ");
+                                    sqlStatement.Append("SELECT ACP.ingame_endpoint_internal_id, ACP.external_endpoint_internal_id ");
+                                    sqlStatement.Append("  FROM allowed_communication_path ACP ");
+                                    sqlStatement.Append("  WHERE ACP.allowed_communcation_path_internal_id = @AllowedCommunicationPathInternalID ");
 
-                                    sqlCommandGetInGameToAccountPairing = sqlConnection1.CreateCommand();
-                                    sqlCommandGetInGameToAccountPairing.CommandText = sqlStatement.ToString();
-                                    sqlCommandGetInGameToAccountPairing.CommandTimeout = 600;
-                                    sqlCommandGetInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@AllowedCommunicationPathInternalID", NpgsqlTypes.NpgsqlDbType.Integer));
-                                    sqlCommandGetInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@InGameUserId", NpgsqlTypes.NpgsqlDbType.Varchar, 20));
+                                    sqlCommandGetAllowedCommunicationPath = sqlConnection1.CreateCommand();
+                                    sqlCommandGetAllowedCommunicationPath.CommandText = sqlStatement.ToString();
+                                    sqlCommandGetAllowedCommunicationPath.CommandTimeout = 600;
+                                    sqlCommandGetAllowedCommunicationPath.Parameters.Add(new NpgsqlParameter("@AllowedCommunicationPathInternalID", NpgsqlTypes.NpgsqlDbType.Integer));
 
-                                    sqlCommandGetInGameToAccountPairing.Parameters["@AllowedCommunicationPathInternalID"].Value = 0;
-                                    sqlCommandGetInGameToAccountPairing.Parameters["@InGameUserId"].Value = "";
-                                    await sqlCommandGetInGameToAccountPairing.PrepareAsync();
-                                    sqlDataReaderGetInGameToAccountPairing = await sqlCommandGetInGameToAccountPairing.ExecuteReaderAsync();
-                                    if (await sqlDataReaderGetInGameToAccountPairing.ReadAsync())
+                                    sqlCommandGetAllowedCommunicationPath.Parameters["@AllowedCommunicationPathInternalID"].Value = 0;
+                                    await sqlCommandGetAllowedCommunicationPath.PrepareAsync();
+
+                                    sqlCommandGetAllowedCommunicationPath.Parameters["@AllowedCommunicationPathInternalID"].Value = allowedCommunicationPathInternalId;
+                                    sqlDataReaderGetAllowedCommunicationPath = await sqlCommandGetAllowedCommunicationPath.ExecuteReaderAsync();
+                                    if (await sqlDataReaderGetAllowedCommunicationPath.ReadAsync())
                                     {
 
-                                        inGameEndpointInternalId = sqlDataReaderGetInGameToAccountPairing.GetInt32(ApplicationValues.ACCOUNT_PAIRING_ENDPOINT_NOTIFY_QUERY_RESULT_COLUMN_OFFSET_INGAME_ENDPOINT_INTERNAL_ID);
-                                        externalEndpointInternalId = sqlDataReaderGetInGameToAccountPairing.GetInt32(ApplicationValues.ACCOUNT_PAIRING_ENDPOINT_NOTIFY_QUERY_RESULT_COLUMN_OFFSET_EXTERNAL_ENDPOINT_INTERNAL_ID);
+                                        inGameEndpointInternalId = sqlDataReaderGetAllowedCommunicationPath.GetInt32(ApplicationValues.ALLOWED_COMMUNICATION_PATH_QUERY_RESULT_COLUMN_OFFSET_INGAME_ENDPOINT_INTERNAL_ID);
+                                        externalEndpointInternalId = sqlDataReaderGetAllowedCommunicationPath.GetInt32(ApplicationValues.ALLOWED_COMMUNICATION_PATH_QUERY_RESULT_COLUMN_OFFSET_INGAME_ENDPOINT_EXTERNAL_ID);
 
                                         int generatedSystemMessageId = int.Parse(System.DateTime.Now.ToString("MMddhhmmss"));
 
@@ -1935,8 +1939,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                         TequaCreek.BloxChannelDotNetAPI.Models.BloxGuardian.RemovedPairedAccountInformation removedPairedAccountInformationForEE =
                                             new BloxChannelDotNetAPI.Models.BloxGuardian.RemovedPairedAccountInformation();
 
-                                        removedPairedAccountInformationForEE.inGameUserId =
-                                            sqlDataReaderGetInGameToAccountPairing.GetString(ApplicationValues.ACCOUNT_PAIRING_ENDPOINT_NOTIFY_QUERY_RESULT_COLUMN_OFFSET_INGAME_USER_ID);
+                                        removedPairedAccountInformationForEE.inGameUserId = inGameUserId;
 
                                         fromBloxGuardianMessagePacket = new BloxChannelDotNetAPI.Models.BloxGuardian.FromBloxGuardianMessagePacket();
 
@@ -1959,14 +1962,12 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
 
                                         Directory.CreateDirectory(baseFileDirectory);       // PROGRAMMER'S NOTE:  This function will return if directory already created
 
-
                                         // 1.)  Write return message to file on file system for In-Game Endpoint
 
                                         TequaCreek.BloxChannelIGInternalAPI.Models.BloxGuardian.RemovedPairedAccountInformation removedPairedAccountInformationForIG =
                                             new BloxChannelIGInternalAPI.Models.BloxGuardian.RemovedPairedAccountInformation();
 
-                                        removedPairedAccountInformationForIG.inGameUserId =
-                                            sqlDataReaderGetInGameToAccountPairing.GetString(ApplicationValues.ACCOUNT_PAIRING_ENDPOINT_NOTIFY_QUERY_RESULT_COLUMN_OFFSET_INGAME_USER_ID);
+                                        removedPairedAccountInformationForIG.inGameUserId = inGameUserId;
 
                                         var fromBloxGuardianMessagePacketForIG = new BloxChannelIGInternalAPI.Models.BloxGuardian.FromBloxGuardianMessagePacket();
 
@@ -1983,16 +1984,19 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                     }
                                     else
                                     {
-                                        logger.LogWarning("System integrity issue - cannot find account pairing record in BloxGuardianMessageProcessingService::Worker::MessageReceivedAsync");
+
+                                        logger.LogWarning("System integrity issue - cannot find Allowed Communication Path record in BloxGuardianMessageProcessingService::Worker::MessageReceivedAsync");
                                         continueProcessing = false;
+
                                     }       // (await sqlDataReaderGetInGameToAccountPairing.ReadAsync())
-                                    await sqlDataReaderGetInGameToAccountPairing.CloseAsync();
+                                    await sqlDataReaderGetAllowedCommunicationPath.CloseAsync();
 
                                     break;
 
-                                case TequaCreek.BloxGuardianDataModelLibrary.MessageOriginationType.InterSystemNotifyPairingSettingsUpdated:
+                                case TequaCreek.BloxGuardianDataModelLibrary.MessageProcessingServiceTaskType.NotifyUpdatedPairingSettings:
 
-                                    inGameUserBGAccountPairingInternalId = int.Parse(messageBody.Substring(messageBody.IndexOf(",") + 1));
+                                    commaPos1 = messageBody.IndexOf(",", commaPos2 + 1);
+                                    inGameUserBGAccountPairingInternalId = int.Parse(messageBody.Substring(commaPos2 + 1, commaPos1 - commaPos2));
 
                                     ///////////////////////////////////////////////////////////////////////
                                     //////  Intersystem to BG - Send Pairing Settings Update Messages /////
@@ -2016,11 +2020,9 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                     sqlCommandGetInGameToAccountPairing = sqlConnection1.CreateCommand();
                                     sqlCommandGetInGameToAccountPairing.CommandText = sqlStatement.ToString();
                                     sqlCommandGetInGameToAccountPairing.CommandTimeout = 600;
-                                    sqlCommandGetInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@AllowedCommunicationPathInternalID", NpgsqlTypes.NpgsqlDbType.Integer));
-                                    sqlCommandGetInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@InGameUserId", NpgsqlTypes.NpgsqlDbType.Varchar, 20));
+                                    sqlCommandGetInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@InGameUserBGAccountPairingInternalID", NpgsqlTypes.NpgsqlDbType.Integer));
 
-                                    sqlCommandGetInGameToAccountPairing.Parameters["@AllowedCommunicationPathInternalID"].Value = 0;
-                                    sqlCommandGetInGameToAccountPairing.Parameters["@InGameUserId"].Value = "";
+                                    sqlCommandGetInGameToAccountPairing.Parameters["@InGameUserBGAccountPairingInternalID"].Value = 0;
                                     await sqlCommandGetInGameToAccountPairing.PrepareAsync();
                                     sqlDataReaderGetInGameToAccountPairing = await sqlCommandGetInGameToAccountPairing.ExecuteReaderAsync();
                                     if (await sqlDataReaderGetInGameToAccountPairing.ReadAsync())
@@ -2103,11 +2105,7 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                     }       // (await sqlDataReaderGetInGameToAccountPairing.ReadAsync())
                                     await sqlDataReaderGetInGameToAccountPairing.CloseAsync();
 
-
                                     break;
-
-
-
 
                             }
 
@@ -2135,7 +2133,6 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
             }
 
         }       // FromBloxChannelMessageReceivedAsync()
-
 
         private string PadZeroLeft(int inValue, int stringLength)
         {
