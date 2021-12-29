@@ -5,8 +5,8 @@
     <UserSecretsId>dotnet-TestDNCoreService-91C834A8-76F0-4740-94AB-47C01706635F</UserSecretsId>
     <AssemblyName>TequaCreek.BloxGuardianMessageProcessingService</AssemblyName>
     <RootNamespace>TequaCreek.BloxGuardianMessageProcessingService</RootNamespace>
-    <AssemblyVersion>1.0.1.15</AssemblyVersion>
-    <FileVersion>1.0.1.15</FileVersion>
+    <AssemblyVersion>1.0.1.18</AssemblyVersion>
+    <FileVersion>1.0.1.18</FileVersion>
     <Version>1.0.0</Version>
     <Copyright>Copyright (C) 2021 Tequa Creek Holdings, LLC</Copyright>
   </PropertyGroup>

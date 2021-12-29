@@ -391,8 +391,10 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                             sqlStatement = new System.Text.StringBuilder();
                                             sqlStatement.Append("INSERT INTO ingame_user_bg_account_pairing ");
                                             sqlStatement.Append("  (allowed_communication_path_internal_id, ingame_user_id, bloxguardian_account_internal_id, ");
-                                            sqlStatement.Append("   pairing_status, record_added_date_time, record_last_updated_date_time) ");
+                                            sqlStatement.Append("   allow_share_location_info, allow_payment_txn_request, pairing_status, ");
+                                            sqlStatement.Append("   record_added_date_time, record_last_updated_date_time) ");
                                             sqlStatement.Append("  VALUES (@AllowedCommunicationPathInternalID, @InGameUserId, @BloxGuardianAccountInternalID, ");
+                                            sqlStatement.Append("          @AllowShareLocationInfo, @AllowPaymentTxnRequest, ");
                                             sqlStatement.Append("          @PairingStatus, @RecordAddedDateTime, @RecordLastUpdatedDateTime) ");
 
                                             sqlCommandInsertInGameToAccountPairing = sqlConnection2.CreateCommand();
@@ -401,6 +403,8 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                             sqlCommandInsertInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@AllowedCommunicationPathInternalID", NpgsqlTypes.NpgsqlDbType.Integer));
                                             sqlCommandInsertInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@InGameUserId", NpgsqlTypes.NpgsqlDbType.Varchar, 20));
                                             sqlCommandInsertInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@BloxGuardianAccountInternalID", NpgsqlTypes.NpgsqlDbType.Integer));
+                                            sqlCommandInsertInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@AllowShareLocationInfo", NpgsqlTypes.NpgsqlDbType.Boolean));
+                                            sqlCommandInsertInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@AllowPaymentTxnRequest", NpgsqlTypes.NpgsqlDbType.Boolean));
                                             sqlCommandInsertInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@PairingStatus", NpgsqlTypes.NpgsqlDbType.Integer));
                                             sqlCommandInsertInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@RecordAddedDateTime", NpgsqlTypes.NpgsqlDbType.Date));
                                             sqlCommandInsertInGameToAccountPairing.Parameters.Add(new NpgsqlParameter("@RecordLastUpdatedDateTime", NpgsqlTypes.NpgsqlDbType.Date));
@@ -408,6 +412,8 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                             sqlCommandInsertInGameToAccountPairing.Parameters["@AllowedCommunicationPathInternalID"].Value = 0;
                                             sqlCommandInsertInGameToAccountPairing.Parameters["@InGameUserId"].Value = "";
                                             sqlCommandInsertInGameToAccountPairing.Parameters["@BloxGuardianAccountInternalID"].Value = 0;
+                                            sqlCommandInsertInGameToAccountPairing.Parameters["@AllowShareLocationInfo"].Value = false;
+                                            sqlCommandInsertInGameToAccountPairing.Parameters["@AllowPaymentTxnRequest"].Value = false;
                                             sqlCommandInsertInGameToAccountPairing.Parameters["@PairingStatus"].Value = 0;
                                             sqlCommandInsertInGameToAccountPairing.Parameters["@RecordAddedDateTime"].Value = DateTime.MinValue;
                                             sqlCommandInsertInGameToAccountPairing.Parameters["@RecordLastUpdatedDateTime"].Value = DateTime.MinValue;
@@ -469,6 +475,8 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                                         sqlCommandInsertInGameToAccountPairing.Parameters["@AllowedCommunicationPathInternalID"].Value = allowedCommunicationPathInternalId;
                                                         sqlCommandInsertInGameToAccountPairing.Parameters["@InGameUserId"].Value = inGameUserId;
                                                         sqlCommandInsertInGameToAccountPairing.Parameters["@BloxGuardianAccountInternalID"].Value = System.DBNull.Value;
+                                                        sqlCommandInsertInGameToAccountPairing.Parameters["@AllowShareLocationInfo"].Value = false;     // PROGRAMMER'S NOTE:  Default value
+                                                        sqlCommandInsertInGameToAccountPairing.Parameters["@AllowPaymentTxnRequest"].Value = false;     // PROGRAMMER'S NOTE:  Default value
                                                         sqlCommandInsertInGameToAccountPairing.Parameters["@PairingStatus"].Value = (int)TequaCreek.BloxGuardianDataModelLibrary.PairingStatus.HalfOpenFromInGame;
                                                         sqlCommandInsertInGameToAccountPairing.Parameters["@RecordAddedDateTime"].Value = processingRunDateTime;
                                                         sqlCommandInsertInGameToAccountPairing.Parameters["@RecordLastUpdatedDateTime"].Value = processingRunDateTime;
@@ -517,6 +525,8 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                                 sqlCommandInsertInGameToAccountPairing.Parameters["@AllowedCommunicationPathInternalID"].Value = allowedCommunicationPathInternalId;
                                                 sqlCommandInsertInGameToAccountPairing.Parameters["@InGameUserId"].Value = inGameUserId;
                                                 sqlCommandInsertInGameToAccountPairing.Parameters["@BloxGuardianAccountInternalID"].Value = System.DBNull.Value;
+                                                sqlCommandInsertInGameToAccountPairing.Parameters["@AllowShareLocationInfo"].Value = false;     // PROGRAMMER'S NOTE:  Default value
+                                                sqlCommandInsertInGameToAccountPairing.Parameters["@AllowPaymentTxnRequest"].Value = false;     // PROGRAMMER'S NOTE:  Default value
                                                 sqlCommandInsertInGameToAccountPairing.Parameters["@PairingStatus"].Value = (int)TequaCreek.BloxGuardianDataModelLibrary.PairingStatus.HalfOpenFromInGame;
                                                 sqlCommandInsertInGameToAccountPairing.Parameters["@RecordAddedDateTime"].Value = processingRunDateTime;
                                                 sqlCommandInsertInGameToAccountPairing.Parameters["@RecordLastUpdatedDateTime"].Value = processingRunDateTime;
@@ -1069,9 +1079,6 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
                                 }
 
                             }
-
-
-
 
                             break;
 
