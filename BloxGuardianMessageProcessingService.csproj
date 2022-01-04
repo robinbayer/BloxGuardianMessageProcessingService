@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <UserSecretsId>dotnet-TestDNCoreService-91C834A8-76F0-4740-94AB-47C01706635F</UserSecretsId>
     <AssemblyName>TequaCreek.BloxGuardianMessageProcessingService</AssemblyName>
     <RootNamespace>TequaCreek.BloxGuardianMessageProcessingService</RootNamespace>
-    <AssemblyVersion>1.0.1.18</AssemblyVersion>
-    <FileVersion>1.0.1.18</FileVersion>
+    <AssemblyVersion>1.0.0.19</AssemblyVersion>
+    <FileVersion>1.0.0.19</FileVersion>
     <Version>1.0.0</Version>
     <Copyright>Copyright (C) 2021 Tequa Creek Holdings, LLC</Copyright>
   </PropertyGroup>
@@ -16,6 +16,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="dotAPNS" Version="4.1.0" />
+    <PackageReference Include="dotAPNS.AspNetCore" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
