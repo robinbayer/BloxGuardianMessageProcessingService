@@ -1409,7 +1409,8 @@ namespace TequaCreek.BloxGuardianMessageProcessingService
 
                                         fromBloxGuardianMessagePacket.respondingToMessageToBloxGuardianExternalId =
                                             messageToBloxGuardianExternalId;
-                                        fromBloxGuardianMessagePacket.responsePayloadType = (int)TequaCreek.BloxChannelDotNetAPI.ResponsePayloadType.GetPendingMessagesForAccount;
+                                        fromBloxGuardianMessagePacket.responsePayloadType = 
+                                            (int)TequaCreek.BloxChannelDotNetAPI.ResponsePayloadType.GetPendingMessagesForAccount;
                                         fromBloxGuardianMessagePacket.responsePayload = Base64Encode(JsonConvert.SerializeObject(messageList));
 
                                         // Format return message as JSON object and save to file on filesystem
